@@ -1,0 +1,185 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "register": "Sign up"
+    },
+    "register": {
+      "title": "Register",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "submit": "Sign up",
+      "hasAccount": "Already have an account?",
+      "login": "Sign in"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid credentials",
+      "emailAlreadyExists": "This email is already in use",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "invalidEmail": "Invalid email",
+      "required": "This field is required"
+    }
+  },
+  "profiles": {
+    "title": "Child profiles",
+    "create": "Create profile",
+    "edit": "Edit profile",
+    "delete": "Delete profile",
+    "name": "Name",
+    "avatar": "Avatar",
+    "schoolLevel": "School level",
+    "active": "Active",
+    "inactive": "Inactive",
+    "selectProfile": "Select a profile",
+    "noProfiles": "No child profiles",
+    "createFirst": "Create your first child profile",
+    "confirmDelete": "Are you sure you want to delete this profile?",
+    "created": "Profile created successfully",
+    "updated": "Profile updated successfully",
+    "deleted": "Profile deleted successfully"
+  },
+  "dictation": {
+    "title": "Dictation",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "restart": "Restart",
+    "nextWord": "Next word",
+    "previousWord": "Previous word",
+    "repeat": "Repeat",
+    "help": "Help",
+    "listening": "Listening...",
+    "speak": "Speak now",
+    "processing": "Processing...",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "score": "Score",
+    "accuracy": "Accuracy",
+    "wordsCorrect": "Correct words",
+    "wordsTotal": "Total words",
+    "errors": "Errors",
+    "noErrors": "No errors!",
+    "results": {
+      "title": "Results",
+      "congratulations": "Congratulations!",
+      "wellDone": "Well done!",
+      "tryAgain": "Try again",
+      "nextDictation": "Next dictation",
+      "viewErrors": "View errors",
+      "stars": "Stars"
+    },
+    "errors": {
+      "noSpeech": "No speech detected",
+      "notAllowed": "Microphone access denied",
+      "network": "Network error",
+      "unknown": "Unknown error"
+    }
+  },
+  "dashboard": {
+    "child": {
+      "title": "My dashboard",
+      "welcome": "Welcome",
+      "progress": "Progress",
+      "recentDictations": "Recent dictations",
+      "suggested": "Suggested dictations",
+      "rewards": "Rewards",
+      "level": "Level",
+      "completed": "Completed",
+      "inProgress": "In progress",
+      "locked": "Locked"
+    },
+    "parent": {
+      "title": "Parent dashboard",
+      "overview": "Overview",
+      "children": "Children",
+      "selectChild": "Select a child",
+      "statistics": "Statistics",
+      "progress": "Overall progress"
+    }
+  },
+  "stats": {
+    "title": "Statistics",
+    "overview": "Overview",
+    "history": "History",
+    "errors": "Error analysis",
+    "progress": "Progress",
+    "scores": "Scores",
+    "byLevel": "By level",
+    "byCategory": "By category",
+    "mostCommonErrors": "Most common errors",
+    "improvement": "Improvement",
+    "suggestions": "Suggestions"
+  },
+  "import": {
+    "title": "Import dictation",
+    "photo": "Take a photo",
+    "upload": "Upload file",
+    "supportedFormats": "Supported formats",
+    "processing": "Processing...",
+    "preview": "Preview",
+    "edit": "Edit text",
+    "mode": {
+      "title": "Choose mode",
+      "wordByWord": "Word by word dictation",
+      "fullText": "Full text dictation"
+    },
+    "create": "Create dictation",
+    "success": "Dictation created successfully",
+    "error": "Error creating dictation"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "dictations": "Dictations",
+    "stats": "Statistics",
+    "profiles": "Profiles",
+    "import": "Import",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized",
+    "serverError": "Server error",
+    "networkError": "Network error",
+    "tryAgain": "Try again"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Invalid email",
+    "minLength": "Minimum {min} characters",
+    "maxLength": "Maximum {max} characters",
+    "password": "Password must be at least 8 characters"
+  }
+}
+
