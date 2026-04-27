@@ -1,35 +1,20 @@
 /**
- * Service TTS intelligent
- *
- * - Si ElevenLabs est configuré (Edge Function /tts), utilise la voix premium
- * - Cache les résultats pour éviter de re-générer le même texte
- * - Fallback automatique sur Web Speech API si ElevenLabs non disponible
- * - Prefetch du mot/phrase suivant(e) pour zéro latence
+ * Service TTS — ElevenLabs via Edge Function + fallback Web Speech API
  */
 
 import { speakWithBrowser } from '../utils/audioUtils';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
-const USE_API = !!API_BASE;
 
 // Cache en mémoire : text -> base64 audio
 const audioCache = new Map<string, string>();
 
-// ElevenLabs disponible ? null = pas encore testé, false = indisponible
-let elevenLabsAvailable: boolean | null = null;
-
-interface TtsResult {
-  audio: string;
-  mimeType: string;
-  fallback?: boolean;
-}
-
-async function fetchTts(text: string): Promise<TtsResult | null> {
-  if (!USE_API || elevenLabsAvailable === false) return null;
+async function fetchTts(text: string): Promise<string | null> {
+  if (!API_BASE) return null;
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
     const res = await fetch(`${API_BASE}/tts`, {
       method: 'POST',
@@ -39,71 +24,58 @@ async function fetchTts(text: string): Promise<TtsResult | null> {
     });
 
     clearTimeout(timeout);
-
-    if (!res.ok) {
-      elevenLabsAvailable = false;
-      return null;
-    }
+    if (!res.ok) return null;
 
     const data = await res.json();
+    if (data.fallback || !data.audio) return null;
 
-    if (data.fallback) {
-      elevenLabsAvailable = false;
-      return null;
-    }
-
-    elevenLabsAvailable = true;
-    return data;
+    return data.audio;
   } catch {
-    elevenLabsAvailable = false;
     return null;
   }
 }
 
 /**
- * Pré-charge l'audio d'un texte dans le cache (fire & forget)
+ * Pré-charge l'audio d'un texte dans le cache
  */
 export function prefetchAudio(text: string): void {
-  const key = text.trim().toLowerCase();
-  if (audioCache.has(key) || elevenLabsAvailable === false) return;
-  if (!USE_API) return;
+  if (!API_BASE) return;
+  const key = text.trim();
+  if (audioCache.has(key)) return;
 
-  fetchTts(text).then(result => {
-    if (result?.audio) {
-      audioCache.set(key, result.audio);
-    }
+  fetchTts(text).then(audio => {
+    if (audio) audioCache.set(key, audio);
   });
 }
 
 /**
- * Joue un texte avec la meilleure source disponible
- * Retourne une fonction stop()
+ * Joue un texte — ElevenLabs si dispo, sinon Web Speech API
  */
 export async function speak(
   text: string,
   options: { rate?: number; onEnd?: () => void } = {}
 ): Promise<() => void> {
   const { rate = 1.0, onEnd } = options;
-  const key = text.trim().toLowerCase();
+  const key = text.trim();
 
-  // 1. Cache ElevenLabs
+  // 1. Déjà en cache → jouer direct
   if (audioCache.has(key)) {
     return playMp3Base64(audioCache.get(key)!, rate, onEnd);
   }
 
-  // 2. Si ElevenLabs indisponible ou pas configuré → Web Speech direct
-  if (elevenLabsAvailable === false || !USE_API) {
+  // 2. Pas d'API → Web Speech direct
+  if (!API_BASE) {
     return speakWithBrowser(text, { rate, onEnd });
   }
 
-  // 3. Premier appel : tester ElevenLabs (timeout 5s)
-  const result = await fetchTts(text);
-  if (result?.audio) {
-    audioCache.set(key, result.audio);
-    return playMp3Base64(result.audio, rate, onEnd);
+  // 3. Tenter ElevenLabs
+  const audio = await fetchTts(text);
+  if (audio) {
+    audioCache.set(key, audio);
+    return playMp3Base64(audio, rate, onEnd);
   }
 
-  // 4. Fallback Web Speech API
+  // 4. Fallback
   return speakWithBrowser(text, { rate, onEnd });
 }
 
@@ -146,7 +118,11 @@ function playMp3Base64(
     source.onended = cleanup;
     source.start(0);
   }).catch(() => {
-    cleanup();
+    // MP3 decode failed → fallback browser
+    stopped = true;
+    const stop = speakWithBrowser(base64.slice(0, 100), { rate, onEnd });
+    // Override cleanup
+    return stop;
   });
 
   return cleanup;
