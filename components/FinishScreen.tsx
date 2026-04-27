@@ -23,11 +23,23 @@ const CONFETTI = [
 export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
   const [showContent, setShowContent] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
+  const [mistakes, setMistakes] = useState<number | null>(null);
+  const [mistakesInput, setMistakesInput] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 300);
     return () => clearTimeout(timer);
   }, []);
+
+  const totalWords = words.length;
+  const score = mistakes !== null ? Math.round(((totalWords - mistakes) / totalWords) * 100) : null;
+
+  const handleMistakesSubmit = () => {
+    const n = parseInt(mistakesInput);
+    if (!isNaN(n) && n >= 0 && n <= totalWords) {
+      setMistakes(n);
+    }
+  };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[80vh] overflow-hidden">
@@ -47,7 +59,7 @@ export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
       ))}
 
       <div
-        className={`flex flex-col items-center text-center px-6 transition-all duration-700 ${
+        className={`flex flex-col items-center text-center px-6 w-full max-w-sm transition-all duration-700 ${
           showContent ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-8'
         }`}
       >
@@ -61,20 +73,66 @@ export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
           Tu as terminé ta dictée !
         </p>
 
-        <p className="text-slate-400 mb-8">
-          Continue comme ça, tu es un champion ! 💪
+        <p className="text-slate-400 mb-6">
+          {totalWords} mots dictés 💪
         </p>
+
+        {/* Auto-évaluation */}
+        {mistakes === null ? (
+          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 animate-fade-in">
+            <p className="text-sm font-bold text-slate-700 mb-3">Combien de fautes as-tu fait ?</p>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min="0"
+                max={totalWords}
+                value={mistakesInput}
+                onChange={(e) => setMistakesInput(e.target.value)}
+                className="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-center text-lg font-bold"
+                placeholder="0"
+                onKeyDown={(e) => e.key === 'Enter' && handleMistakesSubmit()}
+              />
+              <Button onClick={handleMistakesSubmit} disabled={!mistakesInput}>
+                OK
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 animate-fade-in">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-slate-600">Ton score :</span>
+              <span className={`text-3xl font-extrabold ${
+                score! >= 80 ? 'text-green-500' : score! >= 50 ? 'text-amber-500' : 'text-red-400'
+              }`}>
+                {score}%
+              </span>
+            </div>
+            <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ${
+                  score! >= 80 ? 'bg-green-500' : score! >= 50 ? 'bg-amber-500' : 'bg-red-400'
+                }`}
+                style={{ width: `${score}%` }}
+              />
+            </div>
+            <p className="text-sm text-slate-400 mt-2">
+              {mistakes === 0 ? 'Zéro faute ! Parfait ! 🌟' :
+               mistakes === 1 ? '1 seule faute, c\'est presque parfait !' :
+               `${mistakes} fautes sur ${totalWords} mots`}
+            </p>
+          </div>
+        )}
 
         {/* Correction */}
         {!showCorrection ? (
           <button
             onClick={() => setShowCorrection(true)}
-            className="mb-8 px-6 py-3 rounded-2xl bg-green-50 border border-green-200 text-green-600 font-semibold hover:bg-green-100 transition-colors"
+            className="mb-6 px-6 py-3 rounded-2xl bg-green-50 border border-green-200 text-green-600 font-semibold hover:bg-green-100 transition-colors"
           >
             Voir la correction
           </button>
         ) : (
-          <div className="mb-8 w-full max-w-sm bg-green-50 rounded-2xl border border-green-100 p-5 animate-fade-in">
+          <div className="mb-6 w-full bg-green-50 rounded-2xl border border-green-100 p-5 animate-fade-in">
             <p className="text-sm font-bold text-green-700 mb-3">Les mots :</p>
             <div className="flex flex-wrap gap-2">
               {words.map((word, i) => (
@@ -86,7 +144,7 @@ export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+        <div className="flex flex-col sm:flex-row gap-4 w-full">
           <Button
             onClick={onRetry}
             className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
