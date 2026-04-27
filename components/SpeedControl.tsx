@@ -4,22 +4,21 @@ interface SpeedControlProps {
 }
 
 const speeds = [
-  { value: 0.85, label: '🐢', title: 'Lent' },
-  { value: 1.0, label: '🐇', title: 'Normal' },
+  { value: 0.85, label: 'Lent' },
+  { value: 1.0, label: 'Normal' },
 ];
 
 export const SpeedControl = ({ value, onChange }: SpeedControlProps) => {
   return (
-    <div className="flex items-center justify-center gap-3 mb-6">
+    <div className="flex items-center justify-center gap-2 mb-6">
       {speeds.map((speed) => (
         <button
           key={speed.value}
           onClick={() => onChange(speed.value)}
-          title={speed.title}
-          className={`w-14 h-14 rounded-xl text-2xl flex items-center justify-center transition-all duration-200
+          className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200
             ${value === speed.value
-              ? 'bg-indigo-600 shadow-md shadow-indigo-200 scale-110'
-              : 'bg-white border border-slate-200 hover:border-indigo-300'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+              : 'bg-white text-slate-400 border border-slate-200 hover:border-indigo-300 hover:text-indigo-500'
             }`}
         >
           {speed.label}
