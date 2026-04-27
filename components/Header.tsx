@@ -3,15 +3,16 @@ import { UserRole } from '../types';
 interface HeaderProps {
   onLogout: () => void;
   onHome: () => void;
+  onLogoClick: () => void;
   userRole: UserRole;
 }
 
-export const Header = ({ onLogout, onHome, userRole }: HeaderProps) => {
+export const Header = ({ onLogout, onHome, onLogoClick, userRole }: HeaderProps) => {
   return (
     <header className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-10">
       <div
         className="flex items-center gap-2.5 cursor-pointer group"
-        onClick={userRole ? onHome : undefined}
+        onClick={onLogoClick}
         role="button"
         title="Retour à l'accueil"
       >
