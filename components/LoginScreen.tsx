@@ -57,7 +57,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
     setIsLoading(true);
     try {
       await resetPassword(email);
-      setSuccess('Email de reinitialisation envoye ! Verifie ta boite mail.');
+      setSuccess('Email de réinitialisation envoyé ! Vérifie ta boîte mail.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur');
     } finally {
