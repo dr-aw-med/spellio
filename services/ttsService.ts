@@ -1,10 +1,10 @@
 /**
  * Service TTS intelligent
  *
- * - Appelle le backend ElevenLabs (Edge Function /tts)
- * - Cache les resultats pour eviter de re-generer le meme texte
+ * - Si ElevenLabs est configuré (Edge Function /tts), utilise la voix premium
+ * - Cache les résultats pour éviter de re-générer le même texte
  * - Fallback automatique sur Web Speech API si ElevenLabs non disponible
- * - Prefetch du mot/phrase suivant(e) pour zero latence
+ * - Prefetch du mot/phrase suivant(e) pour zéro latence
  */
 
 import { speakWithBrowser } from '../utils/audioUtils';
@@ -12,10 +12,10 @@ import { speakWithBrowser } from '../utils/audioUtils';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const USE_API = !!API_BASE;
 
-// Cache en memoire : text -> base64 audio
+// Cache en mémoire : text -> base64 audio
 const audioCache = new Map<string, string>();
 
-// Savoir si ElevenLabs est disponible (evite de re-tester a chaque appel)
+// ElevenLabs disponible ? null = pas encore testé, false = indisponible
 let elevenLabsAvailable: boolean | null = null;
 
 interface TtsResult {
@@ -25,16 +25,26 @@ interface TtsResult {
 }
 
 async function fetchTts(text: string): Promise<TtsResult | null> {
-  if (!USE_API) return null;
+  if (!USE_API || elevenLabsAvailable === false) return null;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
     const res = await fetch(`${API_BASE}/tts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
+      signal: controller.signal,
     });
 
-    if (!res.ok) return null;
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      elevenLabsAvailable = false;
+      return null;
+    }
+
     const data = await res.json();
 
     if (data.fallback) {
@@ -45,16 +55,18 @@ async function fetchTts(text: string): Promise<TtsResult | null> {
     elevenLabsAvailable = true;
     return data;
   } catch {
+    elevenLabsAvailable = false;
     return null;
   }
 }
 
 /**
- * Pre-charge l'audio d'un texte dans le cache (fire & forget)
+ * Pré-charge l'audio d'un texte dans le cache (fire & forget)
  */
 export function prefetchAudio(text: string): void {
   const key = text.trim().toLowerCase();
-  if (audioCache.has(key) || elevenLabsAvailable === false || !USE_API) return;
+  if (audioCache.has(key) || elevenLabsAvailable === false) return;
+  if (!USE_API) return;
 
   fetchTts(text).then(result => {
     if (result?.audio) {
@@ -74,17 +86,17 @@ export async function speak(
   const { rate = 1.0, onEnd } = options;
   const key = text.trim().toLowerCase();
 
-  // 1. Verifier le cache
+  // 1. Cache ElevenLabs
   if (audioCache.has(key)) {
     return playMp3Base64(audioCache.get(key)!, rate, onEnd);
   }
 
-  // 2. Si ElevenLabs est connu comme indisponible, fallback direct
+  // 2. Si ElevenLabs indisponible ou pas configuré → Web Speech direct
   if (elevenLabsAvailable === false || !USE_API) {
     return speakWithBrowser(text, { rate, onEnd });
   }
 
-  // 3. Tenter ElevenLabs
+  // 3. Premier appel : tester ElevenLabs (timeout 5s)
   const result = await fetchTts(text);
   if (result?.audio) {
     audioCache.set(key, result.audio);
@@ -116,7 +128,6 @@ function playMp3Base64(
     onEnd?.();
   };
 
-  // Decoder et jouer
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -135,7 +146,6 @@ function playMp3Base64(
     source.onended = cleanup;
     source.start(0);
   }).catch(() => {
-    // Si le decodage echoue, fallback browser
     cleanup();
   });
 
