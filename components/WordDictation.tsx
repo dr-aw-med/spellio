@@ -69,6 +69,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
         if (isMountedRef.current) {
           setIsPlaying(false);
           setIsLoading(false);
+          setIsRevealed(true);
         }
       }
     });

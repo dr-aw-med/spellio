@@ -3,17 +3,17 @@ import { corsHeaders, handleCors } from "../_shared/cors.ts";
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
-// Tester plusieurs modèles d'image dans l'ordre
-const IMAGE_MODELS = [
+const MODELS_TO_TRY = [
   'gemini-2.0-flash-exp-image-generation',
-  'gemini-2.5-flash-preview-image-generation',
-  'imagen-3.0-generate-002',
+  'gemini-2.0-flash-preview-image-generation',
+  'imagen-3.0-generate-001',
+  'imagen-3.0-fast-generate-001',
 ];
 
-async function tryGenerateImage(story: string): Promise<string | null> {
-  // Essayer les modèles Gemini multimodaux
-  for (const model of IMAGE_MODELS) {
+async function generateImage(story: string): Promise<string | null> {
+  for (const model of MODELS_TO_TRY) {
     try {
+      // Methode generateContent (pour les modèles Gemini multimodaux)
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
       const res = await fetch(url, {
         method: 'POST',
@@ -21,7 +21,7 @@ async function tryGenerateImage(story: string): Promise<string | null> {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `Generate a colorful children's book illustration for this story: ${story.slice(0, 500)}`
+              text: `Create a colorful, warm children's book illustration for: ${story.slice(0, 500)}`
             }]
           }],
           generationConfig: {
@@ -30,23 +30,26 @@ async function tryGenerateImage(story: string): Promise<string | null> {
         }),
       });
 
+      if (res.status === 503) {
+        console.log(`${model}: 503 overloaded, trying next`);
+        continue;
+      }
       if (!res.ok) {
-        console.log(`Model ${model} failed: ${res.status}`);
+        console.log(`${model}: ${res.status}`);
         continue;
       }
 
       const data = await res.json();
       for (const part of data.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData) {
+        if (part.inlineData?.data) {
           console.log(`Image generated with ${model}`);
           return part.inlineData.data;
         }
       }
     } catch (e) {
-      console.log(`Model ${model} error: ${e}`);
+      console.log(`${model} error: ${e}`);
     }
   }
-
   return null;
 }
 
@@ -63,7 +66,7 @@ serve(async (req) => {
       );
     }
 
-    const image = await tryGenerateImage(story);
+    const image = await generateImage(story);
 
     return new Response(
       JSON.stringify({ image }),
