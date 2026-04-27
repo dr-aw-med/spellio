@@ -21,6 +21,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [dictationDone, setDictationDone] = useState(false);
 
   const [mode, setMode] = useState<'PREVIEW' | 'DICTATION'>('PREVIEW');
   const [sentences, setSentences] = useState<string[]>([]);
@@ -125,6 +126,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
     if (currentSentenceIndex < sentences.length - 1) {
       setCurrentSentenceIndex(prev => prev + 1);
     } else {
+      setDictationDone(true);
       setMode('PREVIEW');
     }
   };
@@ -208,15 +210,26 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
       <div className="flex-1 overflow-y-auto mb-6 bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
         <h2 className="text-2xl font-bold text-indigo-800 mb-4 text-center">{storyData.title}</h2>
 
-        {generatedImage && (
+        {generatedImage ? (
           <div className="mb-6 rounded-2xl overflow-hidden shadow-md animate-fade-in">
-            <img src={generatedImage} alt="Illustration de l'histoire" className="w-full h-auto object-cover" />
+            <img src={generatedImage} alt="Illustration" className="w-full h-auto object-cover" />
+          </div>
+        ) : (
+          <div className="mb-6 rounded-2xl bg-gradient-to-br from-indigo-100 via-pink-50 to-amber-50 p-8 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-5xl mb-2">📖✨</div>
+              <p className="text-indigo-400 text-sm font-medium">
+                {dictationDone ? 'Bravo, dictée terminée !' : 'Écoute bien l\'histoire...'}
+              </p>
+            </div>
           </div>
         )}
 
-        <p className="italic text-slate-400 text-center text-sm mb-6 bg-slate-50 p-3 rounded-xl">
-          Découvre l'histoire complète avant de commencer la dictée !
-        </p>
+        {!dictationDone && (
+          <p className="italic text-slate-400 text-center text-sm mb-4 bg-slate-50 p-3 rounded-xl">
+            Découvre l'histoire complète avant de commencer la dictée !
+          </p>
+        )}
 
         {isPlaying && (
           <div className="flex justify-center items-center h-12 gap-1 mb-4">
@@ -253,14 +266,16 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
         </Button>
       </div>
 
-      <details className="mt-6 group">
-        <summary className="list-none text-center text-slate-400 text-sm cursor-pointer hover:text-indigo-500 transition-colors select-none">
-          Voir le texte (Correction)
-        </summary>
-        <div className="mt-4 p-6 bg-green-50 rounded-2xl border border-green-100 text-slate-700 animate-fade-in select-text">
-          {storyData.story}
-        </div>
-      </details>
+      {dictationDone && (
+        <details className="mt-6 group">
+          <summary className="list-none text-center text-green-500 text-sm font-medium cursor-pointer hover:text-green-600 transition-colors select-none">
+            Voir la correction
+          </summary>
+          <div className="mt-4 p-6 bg-green-50 rounded-2xl border border-green-100 text-slate-700 animate-fade-in select-text">
+            {storyData.story}
+          </div>
+        </details>
+      )}
     </div>
   );
 };
