@@ -1,57 +1,9 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
+import { GoogleGenAI } from "https://esm.sh/@google/genai@1.30.0";
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-
-const MODELS_TO_TRY = [
-  'gemini-2.0-flash-exp-image-generation',
-  'gemini-2.0-flash-preview-image-generation',
-  'imagen-3.0-generate-001',
-  'imagen-3.0-fast-generate-001',
-];
-
-async function generateImage(story: string): Promise<string | null> {
-  for (const model of MODELS_TO_TRY) {
-    try {
-      // Methode generateContent (pour les modèles Gemini multimodaux)
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `Create a colorful, warm children's book illustration for: ${story.slice(0, 500)}`
-            }]
-          }],
-          generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"]
-          }
-        }),
-      });
-
-      if (res.status === 503) {
-        console.log(`${model}: 503 overloaded, trying next`);
-        continue;
-      }
-      if (!res.ok) {
-        console.log(`${model}: ${res.status}`);
-        continue;
-      }
-
-      const data = await res.json();
-      for (const part of data.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData?.data) {
-          console.log(`Image generated with ${model}`);
-          return part.inlineData.data;
-        }
-      }
-    } catch (e) {
-      console.log(`${model} error: ${e}`);
-    }
-  }
-  return null;
-}
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY! });
 
 serve(async (req) => {
   const cors = handleCors(req);
@@ -61,21 +13,39 @@ serve(async (req) => {
     const { story } = await req.json();
     if (!story) {
       return new Response(
-        JSON.stringify({ error: 'story requis' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ image: null }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const image = await generateImage(story);
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: {
+        parts: [{
+          text: `Une illustration coloree style livre pour enfants, chaleureuse et joyeuse, qui represente cette histoire : ${String(story).slice(0, 500)}`,
+        }],
+      },
+      config: {
+        responseModalities: ["TEXT", "IMAGE"],
+      },
+    });
+
+    let base64Image = null;
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        base64Image = part.inlineData.data;
+        break;
+      }
+    }
 
     return new Response(
-      JSON.stringify({ image }),
+      JSON.stringify({ image: base64Image }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Illustration error:', error);
     return new Response(
-      JSON.stringify({ image: null }),
+      JSON.stringify({ image: null, debug: String(error) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
