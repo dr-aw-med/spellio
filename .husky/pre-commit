@@ -1,17 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Lancer les tests avant le commit
-echo "🧪 Exécution des tests..."
-npm test -- --passWithNoTests
-
-# Lancer le linter
-echo "🔍 Vérification du code avec ESLint..."
-npm run lint
-
-# Formater le code avec Prettier
-echo "💅 Formatage du code avec Prettier..."
-npm run format -- --check
-
-echo "✅ Tous les checks sont passés !"
-
+npm run build

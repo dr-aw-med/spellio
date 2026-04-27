@@ -1,0 +1,5 @@
+{
+  "name": "Spellio",
+  "description": "Une application d'aide aux devoirs qui transforme une photo de liste de mots en dictee interactive ou en histoire personnalisee.",
+  "requestFramePermissions": []
+}
