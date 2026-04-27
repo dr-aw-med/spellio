@@ -12,7 +12,6 @@
 
 import {
   extractWordsFromImage as geminiExtract,
-  extractWordsFromText as geminiExtractText,
   generateStoryFromWords as geminiStory,
   generateStoryIllustration as geminiIllustration,
 } from './geminiService';
@@ -36,14 +35,15 @@ export const extractWordsFromImage = async (base64Image: string, mimeType: strin
   return data.words;
 };
 
+/**
+ * Split côté client — chaque mot séparé, ponctuation nettoyée.
+ */
 export const extractWordsFromText = async (text: string): Promise<string[]> => {
-  if (!USE_PROXY) {
-    return geminiExtractText(text);
-  }
-
-  // En prod, on pourrait ajouter un endpoint /split
-  // Pour l'instant, fallback sur le client
-  return geminiExtractText(text);
+  return text
+    .replace(/[.,;:!?()]/g, '') // retirer la ponctuation
+    .split(/[\s,\n]+/)          // split par espaces, virgules, retours à la ligne
+    .map(w => w.trim())
+    .filter(w => w.length > 0);
 };
 
 export const generateStoryFromWords = async (words: string[]): Promise<StoryResponse> => {

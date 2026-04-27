@@ -5,9 +5,10 @@ interface HeaderProps {
   onHome: () => void;
   onLogoClick: () => void;
   userRole: UserRole;
+  showHome?: boolean;
 }
 
-export const Header = ({ onLogout, onHome, onLogoClick, userRole }: HeaderProps) => {
+export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = true }: HeaderProps) => {
   return (
     <header className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-10">
       <div
@@ -35,19 +36,21 @@ export const Header = ({ onLogout, onHome, onLogoClick, userRole }: HeaderProps)
 
       {userRole && (
         <div className="flex items-center gap-2">
-          <button
-            onClick={onHome}
-            className="flex items-center gap-1 text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-full transition-colors"
-            title="Accueil"
-          >
-            <span className="text-lg">🏠</span>
-            <span className="hidden sm:inline">Accueil</span>
-          </button>
+          {showHome && (
+            <button
+              onClick={onHome}
+              className="flex items-center gap-1 text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-full transition-colors"
+              title="Accueil"
+            >
+              <span className="text-lg">🏠</span>
+              <span className="hidden sm:inline">Accueil</span>
+            </button>
+          )}
           <button
             onClick={onLogout}
             className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-full hover:bg-slate-50 uppercase tracking-wide border border-transparent hover:border-slate-200"
           >
-            Déconnexion
+            {userRole === 'STUDENT' ? 'Changer' : 'Déconnexion'}
           </button>
         </div>
       )}

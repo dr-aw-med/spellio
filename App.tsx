@@ -194,7 +194,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-[Fredoka] text-slate-900 pb-10">
-      <Header onLogout={handleLogout} onHome={handleHome} onLogoClick={handleLogout} userRole={userRole} />
+      <Header
+        onLogout={handleLogout}
+        onHome={handleHome}
+        onLogoClick={handleLogout}
+        userRole={userRole}
+        showHome={!(userRole === 'STUDENT' && step === AppStep.UPLOAD)}
+      />
       <main className="container mx-auto max-w-3xl pt-6 px-4">
         {renderContent()}
       </main>

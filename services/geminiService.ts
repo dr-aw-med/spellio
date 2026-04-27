@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey });
 
 export const extractWordsFromImage = async (base64Image: string, mimeType: string): Promise<string[]> => {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: {
       parts: [
         {
@@ -42,71 +42,48 @@ export const extractWordsFromImage = async (base64Image: string, mimeType: strin
 };
 
 export const extractWordsFromText = async (text: string): Promise<string[]> => {
+  const safeText = text.slice(0, 500);
+
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: `Analyse ce texte et extrais les mots individuels pour une dictee d'enfant.
+    model: "gemini-2.0-flash",
+    contents: `Extrais les mots individuels de ce texte pour une dictee d'enfant.
+Garde les determinants avec leur nom (ex: "des champignons", "le chien").
+Separe les verbes conjugues.
+Reponds UNIQUEMENT avec un tableau JSON de strings, rien d'autre.
+Exemple: ["Jean-Charles", "va", "faire", "des courses", "avec", "son chien"]
 
-Texte : "${text}"
-
-REGLES :
-- Separe chaque mot ou groupe nominal en une entree distincte
-- Si un mot a un determinant (le, la, les, un, une, du, des, au, aux...), garde le groupe complet (ex: "le bois", "une pomme")
-- Les prenoms composés restent ensemble (ex: "Jean-Paul")
-- Les verbes conjugues sont des entrees separees
-- Exemple : "Jean-Paul ramasse des champignons" → ["Jean-Paul", "ramasse", "des champignons"]
-
-Retourne un tableau JSON.`,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          words: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "La liste des mots ou groupes nominaux extraits"
-          }
-        },
-        required: ["words"]
-      }
-    }
+Texte: ${safeText}`,
   });
 
-  const jsonText = response.text || "{}";
-  const parsed = JSON.parse(jsonText) as WordListResponse;
-  return parsed.words || [];
+  const raw = (response.text || '').trim();
+  // Extraire le tableau JSON de la reponse
+  const match = raw.match(/\[[\s\S]*\]/);
+  if (match) {
+    return JSON.parse(match[0]) as string[];
+  }
+  // Fallback: split simple
+  return safeText.split(/[\s,]+/).filter(w => w.length > 0);
 };
 
 export const generateStoryFromWords = async (words: string[]): Promise<StoryResponse> => {
-  const prompt = `Cree une petite histoire amusante et coherente pour un enfant, en utilisant la liste de mots suivante : ${words.join(', ')}.
-    L'histoire doit etre courte (environ 5-8 phrases).
-    IMPORTANT : Fais des phrases courtes et simples, bien ponctuees, pour qu'elles soient faciles a dicter a un enfant.
-    Retourne le resultat au format JSON avec un titre et le texte de l'histoire.`;
-
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          story: { type: Type.STRING }
-        },
-        required: ["title", "story"]
-      }
-    }
+    model: "gemini-2.0-flash",
+    contents: `Cree une petite histoire amusante pour un enfant avec ces mots: ${words.join(', ')}.
+5-8 phrases courtes et simples. Reponds UNIQUEMENT en JSON: {"title": "...", "story": "..."}`,
   });
 
-  const jsonText = response.text || "{}";
-  return JSON.parse(jsonText) as StoryResponse;
+  const raw = (response.text || '').trim();
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (match) {
+    return JSON.parse(match[0]) as StoryResponse;
+  }
+  return { title: 'Histoire', story: raw };
 };
 
 export const generateStoryIllustration = async (storyText: string): Promise<string | null> => {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
+      model: "gemini-2.0-flash-exp-image-generation",
       contents: {
         parts: [
           {
