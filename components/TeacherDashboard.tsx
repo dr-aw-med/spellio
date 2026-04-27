@@ -19,6 +19,7 @@ export const TeacherDashboard = () => {
   const [newWordsInput, setNewWordsInput] = useState('');
   const [extractedWords, setExtractedWords] = useState<string[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -286,16 +287,24 @@ export const TeacherDashboard = () => {
                 <h3 className="font-bold text-lg text-slate-800">{dict.title}</h3>
                 <p className="text-slate-500 text-sm mb-2">{dict.words.length} mots - Créée le {new Date(dict.created_at).toLocaleDateString('fr-FR')}</p>
                 <button
-                  onClick={() => { navigator.clipboard.writeText(dict.code); }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(dict.code);
+                    setCopiedCode(dict.code);
+                    setTimeout(() => setCopiedCode(null), 2000);
+                  }}
                   className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg w-fit transition-colors group"
                   title="Copier le code"
                 >
                   <span className="text-xs font-bold text-indigo-800 uppercase tracking-wide">Code Élève :</span>
                   <span className="text-lg font-mono font-bold text-indigo-600">{dict.code}</span>
-                  <svg className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2" />
-                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2" />
-                  </svg>
+                  {copiedCode === dict.code ? (
+                    <span className="text-xs font-bold text-green-600 animate-fade-in">Copié !</span>
+                  ) : (
+                    <svg className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2" />
+                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2" />
+                    </svg>
+                  )}
                 </button>
               </div>
               <button
