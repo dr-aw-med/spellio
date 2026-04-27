@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from './Button';
-import { signIn, signUp } from '../services/authService';
+import { signIn, signUp, resetPassword } from '../services/authService';
 
 interface LoginScreenProps {
   onSelectRole: (role: 'STUDENT' | 'TEACHER') => void;
@@ -12,18 +12,20 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleTeacherAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     if (!email.trim() || !password.trim()) {
       setError('Remplis tous les champs');
       return;
     }
 
-    if (password.length < 6) {
+    if (isSignUp && password.length < 6) {
       setError('Le mot de passe doit faire au moins 6 caracteres');
       return;
     }
@@ -43,12 +45,32 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
     }
   };
 
+  const handleResetPassword = async () => {
+    setError('');
+    setSuccess('');
+
+    if (!email.trim()) {
+      setError('Entre ton email d\'abord');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await resetPassword(email);
+      setSuccess('Email de reinitialisation envoye ! Verifie ta boite mail.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (showTeacherAuth) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in p-6">
         <div className="w-full max-w-sm">
           <button
-            onClick={() => { setShowTeacherAuth(false); setError(''); }}
+            onClick={() => { setShowTeacherAuth(false); setError(''); setSuccess(''); }}
             className="text-sm text-slate-400 hover:text-indigo-500 mb-6 flex items-center gap-1"
           >
             ← Retour
@@ -90,6 +112,9 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
             {error && (
               <p className="text-red-500 text-sm text-center font-medium bg-red-50 p-2 rounded-xl">{error}</p>
             )}
+            {success && (
+              <p className="text-green-600 text-sm text-center font-medium bg-green-50 p-2 rounded-xl">{success}</p>
+            )}
 
             <Button
               type="submit"
@@ -101,9 +126,18 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
             </Button>
           </form>
 
-          <div className="text-center mt-6">
+          <div className="flex flex-col items-center gap-3 mt-6">
+            {!isSignUp && (
+              <button
+                onClick={handleResetPassword}
+                disabled={isLoading}
+                className="text-sm text-slate-400 hover:text-indigo-500 transition-colors"
+              >
+                Mot de passe oublie ?
+              </button>
+            )}
             <button
-              onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
+              onClick={() => { setIsSignUp(!isSignUp); setError(''); setSuccess(''); }}
               className="text-sm text-indigo-500 hover:text-indigo-700 font-medium"
             >
               {isSignUp ? 'Deja un compte ? Se connecter' : 'Pas de compte ? S\'inscrire'}
