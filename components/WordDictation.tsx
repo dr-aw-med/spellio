@@ -126,14 +126,6 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
             {isLoading ? "Chargement..." : isPlaying ? "J'écoute..." : hasListened ? "Réécouter" : "Appuie pour écouter"}
           </p>
 
-          {!isRevealed && !isPlaying && !isLoading && (
-            <button
-              onClick={() => setIsRevealed(true)}
-              className="text-xs text-indigo-400 hover:text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 transition-colors"
-            >
-              Indice
-            </button>
-          )}
         </div>
       </div>
 
