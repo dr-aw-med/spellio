@@ -9,10 +9,11 @@ import { StoryResponse } from '../types';
 
 interface StoryDictationProps {
   words: string[];
+  onFinish: () => void;
   onBack: () => void;
 }
 
-export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
+export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps) => {
   const [storyData, setStoryData] = useState<StoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -126,8 +127,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
     if (currentSentenceIndex < sentences.length - 1) {
       setCurrentSentenceIndex(prev => prev + 1);
     } else {
-      setDictationDone(true);
-      setMode('PREVIEW');
+      onFinish();
     }
   };
 

@@ -57,7 +57,7 @@ function App() {
     showModal(
       'Se déconnecter ?',
       'Tu vas revenir à l\'écran d\'accueil.',
-      'warning',
+      'info',
       async () => {
         if (userRole === 'TEACHER') await signOut();
         setStep(AppStep.LOGIN);

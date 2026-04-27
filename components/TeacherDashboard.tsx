@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from './Button';
 import { Dictation } from '../types';
 import { saveDictation, getAllDictations, deleteDictation } from '../services/storageService';
@@ -20,11 +20,71 @@ export const TeacherDashboard = () => {
   const [extractedWords, setExtractedWords] = useState<string[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     loadDictations();
   }, []);
+
+  // Nettoyage de la reconnaissance vocale au démontage
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+    };
+  }, []);
+
+  const toggleRecording = () => {
+    if (isRecording && recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsRecording(false);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    if (!SpeechRecognition) {
+      setError('La reconnaissance vocale n\'est pas supportée par ton navigateur.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event: { results: { length: number; [key: number]: { [key: number]: { transcript: string } } } }) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setNewWordsInput(prev => {
+        const separator = prev.trim() ? ' ' : '';
+        return prev + separator + transcript;
+      });
+    };
+
+    recognition.onerror = () => {
+      setIsRecording(false);
+      recognitionRef.current = null;
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      recognitionRef.current = null;
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
+  };
 
   const loadDictations = async () => {
     setIsLoading(true);
@@ -234,13 +294,37 @@ export const TeacherDashboard = () => {
           {/* Option 2 : Saisie texte */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-2">Saisir les mots ou une phrase</label>
-            <textarea
-              value={newWordsInput}
-              onChange={(e) => setNewWordsInput(e.target.value)}
-              className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none h-28"
-              placeholder={"Tape les mots, une phrase, ou une liste :\nEx: Jean-Paul ramasse des champignons\nOu: chat, chien, le soleil"}
-              disabled={isAnalyzing}
-            />
+            <div className="relative">
+              <textarea
+                value={newWordsInput}
+                onChange={(e) => setNewWordsInput(e.target.value)}
+                className="w-full p-3 pr-14 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none h-28"
+                placeholder={"Tape les mots, une phrase, ou une liste :\nEx: Jean-Paul ramasse des champignons\nOu: chat, chien, le soleil"}
+                disabled={isAnalyzing}
+              />
+              <button
+                type="button"
+                onClick={toggleRecording}
+                disabled={isAnalyzing}
+                className={`absolute top-2 right-2 p-2.5 rounded-xl transition-all ${
+                  isRecording
+                    ? 'bg-red-100 hover:bg-red-200 text-red-600'
+                    : 'bg-slate-100 hover:bg-indigo-100 text-slate-500 hover:text-indigo-600'
+                }`}
+                title={isRecording ? 'Arrêter la dictée vocale' : 'Dicter les mots'}
+              >
+                {isRecording ? (
+                  <span className="relative flex items-center justify-center w-5 h-5">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                  </span>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
@@ -286,26 +370,38 @@ export const TeacherDashboard = () => {
               <div>
                 <h3 className="font-bold text-lg text-slate-800">{dict.title}</h3>
                 <p className="text-slate-500 text-sm mb-2">{dict.words.length} mots - Créée le {new Date(dict.created_at).toLocaleDateString('fr-FR')}</p>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(dict.code);
-                    setCopiedCode(dict.code);
-                    setTimeout(() => setCopiedCode(null), 2000);
-                  }}
-                  className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg w-fit transition-colors group"
-                  title="Copier le code"
-                >
-                  <span className="text-xs font-bold text-indigo-800 uppercase tracking-wide">Code Élève :</span>
-                  <span className="text-lg font-mono font-bold text-indigo-600">{dict.code}</span>
-                  {copiedCode === dict.code ? (
-                    <span className="text-xs font-bold text-green-600 animate-fade-in">Copié !</span>
-                  ) : (
-                    <svg className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2" />
-                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2" />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(dict.code);
+                      setCopiedCode(dict.code);
+                      setTimeout(() => setCopiedCode(null), 2000);
+                    }}
+                    className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg w-fit transition-colors group"
+                    title="Copier le code"
+                  >
+                    <span className="text-xs font-bold text-indigo-800 uppercase tracking-wide">Code Élève :</span>
+                    <span className="text-lg font-mono font-bold text-indigo-600">{dict.code}</span>
+                    {copiedCode === dict.code ? (
+                      <span className="text-xs font-bold text-green-600 animate-fade-in">Copié !</span>
+                    ) : (
+                      <svg className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" strokeWidth="2" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setQrCode(dict.code)}
+                    className="flex items-center gap-1.5 bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors text-pink-600 hover:text-pink-700 font-medium text-sm"
+                    title="Afficher le QR code"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h7v7H3V3zm11 0h7v7h-7V3zm-11 11h7v7H3v-7zm14 3h.01M17 17h.01M21 17h.01M14 14h3v3h-3v-3zm4 0h3v3h-3v-3zm-4 4h3v3h-3v-3zm4 0h3v3h-3v-3z" />
                     </svg>
-                  )}
-                </button>
+                    QR
+                  </button>
+                </div>
               </div>
               <button
                 onClick={() => setDeleteTarget(dict.id)}
@@ -326,6 +422,34 @@ export const TeacherDashboard = () => {
         message="Cette action est irréversible."
         variant="warning"
       />
+
+      {/* Modal QR Code */}
+      {qrCode && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setQrCode(null)}>
+          <div className="bg-white rounded-3xl p-6 shadow-xl max-w-sm w-full animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-800 text-center mb-2">QR Code de la dictée</h3>
+            <p className="text-sm text-slate-500 text-center mb-4">
+              Les élèves peuvent scanner ce QR code pour accéder directement à la dictée.
+            </p>
+            <div className="flex justify-center mb-4">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://spellio-mu.vercel.app?code=${qrCode}`)}`}
+                alt={`QR Code pour le code ${qrCode}`}
+                className="rounded-xl"
+                width={200}
+                height={200}
+              />
+            </div>
+            <p className="text-center font-mono font-bold text-indigo-600 text-lg mb-4">{qrCode}</p>
+            <button
+              onClick={() => setQrCode(null)}
+              className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-600 font-medium transition-colors"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
