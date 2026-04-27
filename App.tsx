@@ -8,6 +8,7 @@ import { StoryDictation } from './components/StoryDictation';
 import { LoginScreen } from './components/LoginScreen';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { ResetPassword } from './components/ResetPassword';
+import { FinishScreen } from './components/FinishScreen';
 import { Modal } from './components/Modal';
 import { extractWordsFromImage } from './services/api';
 import { signOut } from './services/authService';
@@ -129,8 +130,7 @@ function App() {
   };
 
   const handleDictationFinish = () => {
-    showModal('Bravo !', 'Tu as terminé ta dictée !', 'success');
-    setStep(AppStep.CHOOSE_MODE);
+    setStep(AppStep.FINISHED);
   };
 
   // Écran de reset password
@@ -184,7 +184,18 @@ function App() {
         return (
           <StoryDictation
             words={words}
+            onFinish={handleDictationFinish}
             onBack={() => setStep(AppStep.CHOOSE_MODE)}
+          />
+        );
+      case AppStep.FINISHED:
+        return (
+          <FinishScreen
+            onRetry={() => setStep(AppStep.CHOOSE_MODE)}
+            onNew={() => {
+              setWords([]);
+              setStep(userRole === 'TEACHER' ? AppStep.TEACHER_DASHBOARD : AppStep.UPLOAD);
+            }}
           />
         );
       default:

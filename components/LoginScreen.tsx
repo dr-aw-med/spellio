@@ -150,14 +150,15 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in p-6">
-      <h2 className="text-3xl font-bold text-slate-800 mb-10 text-center">Qui es-tu ?</h2>
+      <h2 className="text-3xl font-bold text-slate-800 mb-2 text-center">Qui es-tu ?</h2>
+      <p className="text-slate-500 text-center mb-10">Bienvenue sur Spellio !</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl">
         <button
           onClick={() => onSelectRole('STUDENT')}
           className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-400 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
         >
-          <div className="text-6xl mb-4 group-hover:animate-bounce">🎒</div>
+          <div className="text-6xl mb-4 group-hover:animate-bounce animate-wiggle">🎒</div>
           <h3 className="text-2xl font-bold text-indigo-900">Je suis un Élève</h3>
           <p className="text-slate-500 mt-2 text-center">Je veux m'entraîner avec ma dictée.</p>
         </button>
@@ -166,7 +167,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
           onClick={() => setShowTeacherAuth(true)}
           className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-400 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
         >
-          <div className="text-6xl mb-4 group-hover:animate-bounce">🧑‍🏫</div>
+          <div className="text-6xl mb-4 group-hover:animate-bounce animate-wiggle" style={{ animationDelay: '0.5s' }}>🧑‍🏫</div>
           <h3 className="text-2xl font-bold text-indigo-900">Je suis Professeur</h3>
           <p className="text-slate-500 mt-2 text-center">Je veux créer et partager des dictées.</p>
         </button>

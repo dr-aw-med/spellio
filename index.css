@@ -38,3 +38,14 @@ body {
 .animate-confetti {
   animation: confetti-fall 2s ease-in forwards;
 }
+
+/* Wiggle animation pour les emojis */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+.animate-wiggle {
+  animation: wiggle 2s ease-in-out infinite;
+}

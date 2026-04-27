@@ -6,6 +6,7 @@ export enum AppStep {
   CHOOSE_MODE = 'CHOOSE_MODE',
   DICTATION_WORD = 'DICTATION_WORD',
   DICTATION_STORY = 'DICTATION_STORY',
+  FINISHED = 'FINISHED',
 }
 
 export interface WordListResponse {
