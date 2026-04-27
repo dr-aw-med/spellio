@@ -116,7 +116,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
 
         <div className="flex flex-col items-center gap-2">
           <p className="text-slate-400 font-medium animate-fade-in">
-            {isLoading ? "Chargement..." : isPlaying ? "J'ecoute..." : "Appuie pour ecouter"}
+            {isLoading ? "Chargement..." : isPlaying ? "J'écoute..." : "Appuie pour écouter"}
           </p>
 
           {!isRevealed && !isPlaying && !isLoading && (
@@ -132,7 +132,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
 
       <div className="mt-auto grid grid-cols-2 gap-4">
         <Button variant="secondary" onClick={handlePrev} disabled={currentIndex === 0}>
-          Precedent
+          Précédent
         </Button>
         {currentIndex === words.length - 1 ? (
           <Button variant="success" onClick={onFinish}>Terminer</Button>

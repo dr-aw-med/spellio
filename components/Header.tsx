@@ -13,7 +13,7 @@ export const Header = ({ onLogout, onHome, userRole }: HeaderProps) => {
         className="flex items-center gap-2.5 cursor-pointer group"
         onClick={userRole ? onHome : undefined}
         role="button"
-        title="Retour a l'accueil"
+        title="Retour à l'accueil"
       >
         <div className="relative w-9 h-9 flex items-center justify-center">
           <svg viewBox="0 0 40 40" className="w-full h-full transition-transform group-hover:scale-110 duration-300">
@@ -27,7 +27,7 @@ export const Header = ({ onLogout, onHome, userRole }: HeaderProps) => {
             <text x="20" y="27" textAnchor="middle" fontSize="22" fontWeight="bold" fill="white" fontFamily="Fredoka, sans-serif">S</text>
           </svg>
         </div>
-        <span className="text-xl font-bold text-slate-800 tracking-tight">
+        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-500 tracking-tight">
           Spellio
         </span>
       </div>
@@ -46,7 +46,7 @@ export const Header = ({ onLogout, onHome, userRole }: HeaderProps) => {
             onClick={onLogout}
             className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-full hover:bg-slate-50 uppercase tracking-wide border border-transparent hover:border-slate-200"
           >
-            Deconnexion
+            Déconnexion
           </button>
         </div>
       )}

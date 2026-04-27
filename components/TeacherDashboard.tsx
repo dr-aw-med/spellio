@@ -126,7 +126,7 @@ export const TeacherDashboard = () => {
       <div className="max-w-4xl mx-auto p-4 animate-fade-in">
         <div className="bg-white p-6 rounded-3xl shadow-md border border-slate-100 mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold">Verifier les mots</h3>
+            <h3 className="text-lg font-bold">Vérifier les mots</h3>
             <button
               onClick={() => setCreateStep('INPUT')}
               className="text-sm text-slate-400 hover:text-indigo-500"
@@ -142,11 +142,11 @@ export const TeacherDashboard = () => {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              placeholder="Ex: Dictee n 12 - Les animaux"
+              placeholder="Ex: Dictée n°12 - Les animaux"
             />
           </div>
 
-          <p className="text-sm text-slate-500 mb-3">{extractedWords.length} mots detectes — tu peux modifier, ajouter ou supprimer :</p>
+          <p className="text-sm text-slate-500 mb-3">{extractedWords.length} mots détectés — tu peux modifier, ajouter ou supprimer :</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             {extractedWords.map((word, index) => (
@@ -192,7 +192,7 @@ export const TeacherDashboard = () => {
     return (
       <div className="max-w-4xl mx-auto p-4 animate-fade-in">
         <div className="bg-white p-6 rounded-3xl shadow-md border border-slate-100 mb-8">
-          <h3 className="text-lg font-bold mb-6">Creer une dictee</h3>
+          <h3 className="text-lg font-bold mb-6">Créer une dictée</h3>
 
           {/* Option 1 : Photo */}
           <div className="mb-6">
@@ -264,7 +264,7 @@ export const TeacherDashboard = () => {
     <div className="max-w-4xl mx-auto p-4 animate-fade-in">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-indigo-900">Tableau de bord Enseignant</h2>
-        <Button onClick={() => setIsCreating(true)}>+ Nouvelle Dictee</Button>
+        <Button onClick={() => setIsCreating(true)}>+ Nouvelle Dictée</Button>
       </div>
 
       <div className="grid gap-4">
@@ -276,17 +276,17 @@ export const TeacherDashboard = () => {
         ) : dictations.length === 0 ? (
           <div className="text-center py-10 bg-slate-50 rounded-3xl border border-dashed border-slate-300">
             <div className="text-4xl mb-3">📝</div>
-            <p className="text-slate-500">Aucune dictee creee pour l'instant.</p>
-            <p className="text-slate-400 text-sm mt-1">Cliquez sur "+ Nouvelle Dictee" pour commencer.</p>
+            <p className="text-slate-500">Aucune dictée créée pour l'instant.</p>
+            <p className="text-slate-400 text-sm mt-1">Cliquez sur « + Nouvelle Dictée » pour commencer.</p>
           </div>
         ) : (
           dictations.map((dict) => (
             <div key={dict.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h3 className="font-bold text-lg text-slate-800">{dict.title}</h3>
-                <p className="text-slate-500 text-sm mb-2">{dict.words.length} mots - Creee le {new Date(dict.created_at).toLocaleDateString('fr-FR')}</p>
+                <p className="text-slate-500 text-sm mb-2">{dict.words.length} mots - Créée le {new Date(dict.created_at).toLocaleDateString('fr-FR')}</p>
                 <div className="flex items-center gap-2 bg-indigo-50 px-3 py-1 rounded-lg w-fit">
-                  <span className="text-xs font-bold text-indigo-800 uppercase tracking-wide">Code Eleve :</span>
+                  <span className="text-xs font-bold text-indigo-800 uppercase tracking-wide">Code Élève :</span>
                   <span className="text-lg font-mono font-bold text-indigo-600 select-all">{dict.code}</span>
                 </div>
               </div>
@@ -305,8 +305,8 @@ export const TeacherDashboard = () => {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
-        title="Supprimer cette dictee ?"
-        message="Cette action est irreversible."
+        title="Supprimer cette dictée ?"
+        message="Cette action est irréversible."
         variant="warning"
       />
     </div>

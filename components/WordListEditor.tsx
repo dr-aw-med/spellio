@@ -28,7 +28,7 @@ export const WordListEditor = ({ words, onConfirm, onRetake }: WordListEditorPro
     <div className="w-full max-w-2xl mx-auto p-4 animate-fade-in pb-24">
       <div className="bg-white rounded-3xl shadow-sm p-6 mb-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-slate-800">J'ai trouve ces mots :</h2>
+          <h2 className="text-xl font-bold text-slate-800">J'ai trouvé ces mots :</h2>
           <button onClick={onRetake} className="text-sm text-slate-400 hover:text-red-500 underline">
             Refaire la photo
           </button>

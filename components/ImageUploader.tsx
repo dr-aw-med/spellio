@@ -49,10 +49,10 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing }
       if (dictation) {
         onCodeValidated(dictation.words);
       } else {
-        setCodeError("Ce code n'existe pas. Verifie avec ton professeur.");
+        setCodeError("Ce code n'existe pas. Vérifie avec ton professeur.");
       }
     } catch {
-      setCodeError("Erreur de connexion. Reessaie.");
+      setCodeError("Erreur de connexion. Réessaie.");
     } finally {
       setIsCheckingCode(false);
     }
@@ -62,7 +62,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing }
     <div className="flex flex-col items-center justify-center p-6 w-full max-w-md mx-auto animate-fade-in gap-8">
       {/* Option 1: Code */}
       <div className="w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-        <h3 className="text-lg font-bold text-indigo-900 mb-3 text-center">J'ai un code dictee</h3>
+        <h3 className="text-lg font-bold text-indigo-900 mb-3 text-center">J'ai un code dictée</h3>
         <div className="flex gap-2">
           <input
             type="text"
@@ -106,7 +106,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing }
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <p className="mb-1 text-sm text-slate-500 font-semibold">
-                {isDragging ? 'Depose la photo ici !' : 'Touche ou glisse une photo'}
+                {isDragging ? 'Dépose la photo ici !' : 'Touche ou glisse une photo'}
               </p>
             </div>
           )}

@@ -26,7 +26,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
     }
 
     if (isSignUp && password.length < 6) {
-      setError('Le mot de passe doit faire au moins 6 caracteres');
+      setError('Le mot de passe doit faire au moins 6 caractères');
       return;
     }
 
@@ -79,7 +79,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
           <div className="text-center mb-8">
             <div className="text-5xl mb-3">🧑‍🏫</div>
             <h2 className="text-2xl font-bold text-slate-800">
-              {isSignUp ? 'Creer un compte' : 'Se connecter'}
+              {isSignUp ? 'Créer un compte' : 'Se connecter'}
             </h2>
             <p className="text-slate-500 mt-1">Espace enseignant</p>
           </div>
@@ -92,7 +92,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                placeholder="enseignant@ecole.fr"
+                placeholder="enseignant@école.fr"
                 autoComplete="email"
               />
             </div>
@@ -104,7 +104,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                placeholder={isSignUp ? '6 caracteres minimum' : '••••••'}
+                placeholder={isSignUp ? '6 caractères minimum' : '••••••'}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
               />
             </div>
@@ -122,7 +122,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
               isLoading={isLoading}
               className="w-full"
             >
-              {isSignUp ? 'Creer mon compte' : 'Se connecter'}
+              {isSignUp ? 'Créer mon compte' : 'Se connecter'}
             </Button>
           </form>
 
@@ -133,14 +133,14 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
                 disabled={isLoading}
                 className="text-sm text-slate-400 hover:text-indigo-500 transition-colors"
               >
-                Mot de passe oublie ?
+                Mot de passe oublié ?
               </button>
             )}
             <button
               onClick={() => { setIsSignUp(!isSignUp); setError(''); setSuccess(''); }}
               className="text-sm text-indigo-500 hover:text-indigo-700 font-medium"
             >
-              {isSignUp ? 'Deja un compte ? Se connecter' : 'Pas de compte ? S\'inscrire'}
+              {isSignUp ? 'Déjà un compte ? Se connecter' : 'Pas de compte ? S\'inscrire'}
             </button>
           </div>
         </div>
@@ -158,8 +158,8 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
           className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-400 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
         >
           <div className="text-6xl mb-4 group-hover:animate-bounce">🎒</div>
-          <h3 className="text-2xl font-bold text-indigo-900">Je suis un Eleve</h3>
-          <p className="text-slate-500 mt-2 text-center">Je veux m'entrainer avec ma dictee.</p>
+          <h3 className="text-2xl font-bold text-indigo-900">Je suis un Élève</h3>
+          <p className="text-slate-500 mt-2 text-center">Je veux m'entraîner avec ma dictée.</p>
         </button>
 
         <button
@@ -168,7 +168,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
         >
           <div className="text-6xl mb-4 group-hover:animate-bounce">🧑‍🏫</div>
           <h3 className="text-2xl font-bold text-indigo-900">Je suis Professeur</h3>
-          <p className="text-slate-500 mt-2 text-center">Je veux creer et partager des dictees.</p>
+          <p className="text-slate-500 mt-2 text-center">Je veux créer et partager des dictées.</p>
         </button>
       </div>
     </div>

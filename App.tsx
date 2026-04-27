@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { ImageUploader } from './components/ImageUploader';
 import { WordListEditor } from './components/WordListEditor';
@@ -7,6 +7,7 @@ import { WordDictation } from './components/WordDictation';
 import { StoryDictation } from './components/StoryDictation';
 import { LoginScreen } from './components/LoginScreen';
 import { TeacherDashboard } from './components/TeacherDashboard';
+import { ResetPassword } from './components/ResetPassword';
 import { Modal } from './components/Modal';
 import { extractWordsFromImage } from './services/api';
 import { signOut } from './services/authService';
@@ -25,12 +26,23 @@ function App() {
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [words, setWords] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     title: '',
     message: '',
     variant: 'info',
   });
+
+  // Détecter le token de reset password dans l'URL
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery')) {
+      setShowResetPassword(true);
+      // Nettoyer l'URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   const showModal = (title: string, message: string, variant: ModalState['variant'] = 'info', onConfirm?: () => void) => {
     setModal({ isOpen: true, title, message, variant, onConfirm });
@@ -42,8 +54,8 @@ function App() {
 
   const handleLogout = () => {
     showModal(
-      'Se deconnecter ?',
-      'Tu vas revenir a l\'ecran d\'accueil.',
+      'Se déconnecter ?',
+      'Tu vas revenir à l\'écran d\'accueil.',
       'warning',
       async () => {
         if (userRole === 'TEACHER') await signOut();
@@ -70,8 +82,8 @@ function App() {
 
     if (inDictation) {
       showModal(
-        'Arreter la dictee ?',
-        'Ta progression ne sera pas sauvegardee.',
+        'Arrêter la dictée ?',
+        'Ta progression ne sera pas sauvegardée.',
         'warning',
         goHome
       );
@@ -98,7 +110,7 @@ function App() {
     } catch {
       showModal(
         'Oups !',
-        'Je n\'ai pas reussi a lire l\'image. Essaie avec une photo plus claire.',
+        'Je n\'ai pas réussi à lire l\'image. Essaie avec une photo plus claire.',
         'warning'
       );
     } finally {
@@ -117,9 +129,24 @@ function App() {
   };
 
   const handleDictationFinish = () => {
-    showModal('Bravo !', 'Tu as termine ta dictee !', 'success');
+    showModal('Bravo !', 'Tu as terminé ta dictée !', 'success');
     setStep(AppStep.CHOOSE_MODE);
   };
+
+  // Écran de reset password
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen bg-slate-50 font-[Fredoka] text-slate-900 pb-10">
+        <Header onLogout={() => {}} onHome={() => {}} userRole={null} />
+        <main className="container mx-auto max-w-3xl pt-6 px-4">
+          <ResetPassword onDone={() => {
+            setShowResetPassword(false);
+            showModal('Mot de passe modifié !', 'Tu peux maintenant te connecter.', 'success');
+          }} />
+        </main>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (step) {

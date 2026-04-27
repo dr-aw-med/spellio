@@ -41,7 +41,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
         setSentences(parsed);
         // Prefetch les premieres phrases pour la dictee
         parsed.slice(0, 2).forEach(s => {
-          prefetchAudio(`${s}. . . . Je repete : ${s}`);
+          prefetchAudio(`${s}. . . . Je répète : ${s}`);
         });
       } catch {
         if (isMountedRef.current) setError(true);
@@ -60,7 +60,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
   useEffect(() => {
     if (mode === 'DICTATION' && currentSentenceIndex < sentences.length - 1) {
       const next = sentences[currentSentenceIndex + 1];
-      prefetchAudio(`${next}. . . . Je repete : ${next}`);
+      prefetchAudio(`${next}. . . . Je répète : ${next}`);
     }
   }, [currentSentenceIndex, mode, sentences]);
 
@@ -74,7 +74,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
 
   const playText = async (text: string, isDictation = false) => {
     handleStop();
-    const textToRead = isDictation ? `${text}. . . . Je repete : ${text}` : text;
+    const textToRead = isDictation ? `${text}. . . . Je répète : ${text}` : text;
     setIsLoading(true);
 
     const stop = await speak(textToRead, {
@@ -128,7 +128,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-6">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mb-6" />
-        <h3 className="text-xl font-bold text-indigo-900 mb-2">Creation de l'histoire...</h3>
+        <h3 className="text-xl font-bold text-indigo-900 mb-2">Création de l'histoire...</h3>
         <p className="text-slate-400">La magie est en cours</p>
       </div>
     );
@@ -140,7 +140,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-6">
         <div className="text-6xl mb-4">😕</div>
         <h3 className="text-xl font-bold text-slate-800 mb-2">Oups !</h3>
-        <p className="text-slate-500 mb-6">Je n'ai pas reussi a creer l'histoire.</p>
+        <p className="text-slate-500 mb-6">Je n'ai pas réussi à créer l'histoire.</p>
         <Button onClick={onBack}>Retour au menu</Button>
       </div>
     );
@@ -167,7 +167,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
           </AudioPlayButton>
 
           <p className="text-slate-400 font-medium text-center">
-            {isLoading ? "Chargement..." : isPlaying ? "Pause" : "Ecouter la phrase"}
+            {isLoading ? "Chargement..." : isPlaying ? "Pause" : "Écouter la phrase"}
           </p>
         </div>
 
@@ -177,7 +177,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
             onClick={() => { handleStop(); setCurrentSentenceIndex(prev => Math.max(0, prev - 1)); }}
             disabled={currentSentenceIndex === 0}
           >
-            Precedent
+            Précédent
           </Button>
           <Button onClick={handleNextSentence}>
             {currentSentenceIndex === sentences.length - 1 ? 'Terminer' : 'Phrase Suivante'}
@@ -189,7 +189,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
             onClick={() => { handleStop(); setMode('PREVIEW'); }}
             className="text-sm text-slate-400 underline hover:text-red-500"
           >
-            Arreter la dictee
+            Arrêter la dictée
           </button>
         </div>
       </div>
@@ -209,7 +209,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
         )}
 
         <p className="italic text-slate-400 text-center text-sm mb-6 bg-slate-50 p-3 rounded-xl">
-          Decouvre l'histoire complete avant de commencer la dictee !
+          Découvre l'histoire complète avant de commencer la dictée !
         </p>
 
         {isPlaying && (
@@ -226,7 +226,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
           onClick={() => { handleStop(); setMode('DICTATION'); setCurrentSentenceIndex(0); }}
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
         >
-          Lancer la dictee (phrase par phrase)
+          Lancer la dictée (phrase par phrase)
         </Button>
 
         {!isPlaying ? (
@@ -237,7 +237,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
               disabled={isLoading}
               isLoading={isLoading}
             >
-              Ecouter tout
+              Écouter tout
             </Button>
             <Button
               variant="secondary"
@@ -245,7 +245,7 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
               disabled={isGeneratingImage || !!generatedImage}
               isLoading={isGeneratingImage}
             >
-              {generatedImage ? 'Image creee' : 'Illustrer'}
+              {generatedImage ? 'Image créée' : 'Illustrer'}
             </Button>
           </div>
         ) : (
