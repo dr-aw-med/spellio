@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
-import { ai } from "../_shared/gemini.ts";
+
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 serve(async (req) => {
   const cors = handleCors(req);
@@ -18,19 +19,36 @@ serve(async (req) => {
 
     const safeStory = String(story).slice(0, 2000);
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
-      contents: {
-        parts: [
-          {
-            text: `Une illustration coloree style livre pour enfants, chaleureuse et joyeuse, qui represente cette histoire : ${safeStory}`,
-          },
-        ],
-      },
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Generate a colorful children's book illustration, warm and joyful, representing this story: ${safeStory}`
+          }]
+        }],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"]
+        }
+      }),
     });
 
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('Gemini image error:', err);
+      return new Response(
+        JSON.stringify({ image: null }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const data = await res.json();
     let base64Image = null;
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
+
+    for (const part of data.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         base64Image = part.inlineData.data;
         break;
@@ -44,8 +62,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Illustration error:', error);
     return new Response(
-      JSON.stringify({ error: 'Impossible de generer l\'illustration' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ image: null }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

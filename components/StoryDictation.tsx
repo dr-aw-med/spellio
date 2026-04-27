@@ -43,6 +43,12 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
         parsed.slice(0, 2).forEach(s => {
           prefetchAudio(`${s}. . . . Je répète : ${s}`);
         });
+        // Générer l'illustration automatiquement
+        generateStoryIllustration(result.story).then(img => {
+          if (isMountedRef.current && img) {
+            setGeneratedImage(`data:image/png;base64,${img}`);
+          }
+        }).catch(() => {});
       } catch {
         if (isMountedRef.current) setError(true);
       } finally {
@@ -230,24 +236,14 @@ export const StoryDictation = ({ words, onBack }: StoryDictationProps) => {
         </Button>
 
         {!isPlaying ? (
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => togglePlay(`Voici l'histoire : ${storyData.title}. . . ${storyData.story}`)}
-              disabled={isLoading}
-              isLoading={isLoading}
-            >
-              Écouter tout
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleGenerateIllustration}
-              disabled={isGeneratingImage || !!generatedImage}
-              isLoading={isGeneratingImage}
-            >
-              {generatedImage ? 'Image créée' : 'Illustrer'}
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            onClick={() => togglePlay(`Voici l'histoire : ${storyData.title}. . . ${storyData.story}`)}
+            disabled={isLoading}
+            isLoading={isLoading}
+          >
+            Écouter tout
+          </Button>
         ) : (
           <Button variant="danger" onClick={handleStop}>Pause</Button>
         )}
