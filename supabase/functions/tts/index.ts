@@ -39,7 +39,7 @@ serve(async (req) => {
     }
 
     // Limiter la longueur du texte (securite + cout)
-    const safeText = text.slice(0, 1000);
+    const safeText = text.slice(0, 5000);
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
