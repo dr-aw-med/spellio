@@ -4,6 +4,7 @@ import { Button } from './Button';
 interface FinishScreenProps {
   onRetry: () => void;
   onNew: () => void;
+  words: string[];
 }
 
 const CONFETTI = [
@@ -19,8 +20,9 @@ const CONFETTI = [
   { emoji: '🎊', left: '35%', delay: '0.45s', duration: '2.1s' },
 ];
 
-export const FinishScreen = ({ onRetry, onNew }: FinishScreenProps) => {
+export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
   const [showContent, setShowContent] = useState(false);
+  const [showCorrection, setShowCorrection] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 300);
@@ -29,10 +31,8 @@ export const FinishScreen = ({ onRetry, onNew }: FinishScreenProps) => {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[80vh] overflow-hidden">
-      {/* Fond dégradé */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 via-pink-50 to-amber-50 -z-10 rounded-3xl" />
 
-      {/* Confetti animés */}
       {CONFETTI.map((c, i) => (
         <span
           key={i}
@@ -46,13 +46,11 @@ export const FinishScreen = ({ onRetry, onNew }: FinishScreenProps) => {
         </span>
       ))}
 
-      {/* Contenu principal */}
       <div
         className={`flex flex-col items-center text-center px-6 transition-all duration-700 ${
           showContent ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-8'
         }`}
       >
-        {/* Gros emoji avec pulsation */}
         <div className="text-8xl mb-6 animate-bounce">🏆</div>
 
         <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-pink-500 to-amber-500 bg-clip-text text-transparent mb-4">
@@ -63,23 +61,44 @@ export const FinishScreen = ({ onRetry, onNew }: FinishScreenProps) => {
           Tu as terminé ta dictée !
         </p>
 
-        <p className="text-slate-400 mb-10">
+        <p className="text-slate-400 mb-8">
           Continue comme ça, tu es un champion ! 💪
         </p>
+
+        {/* Correction */}
+        {!showCorrection ? (
+          <button
+            onClick={() => setShowCorrection(true)}
+            className="mb-8 px-6 py-3 rounded-2xl bg-green-50 border border-green-200 text-green-600 font-semibold hover:bg-green-100 transition-colors"
+          >
+            Voir la correction
+          </button>
+        ) : (
+          <div className="mb-8 w-full max-w-sm bg-green-50 rounded-2xl border border-green-100 p-5 animate-fade-in">
+            <p className="text-sm font-bold text-green-700 mb-3">Les mots :</p>
+            <div className="flex flex-wrap gap-2">
+              {words.map((word, i) => (
+                <span key={i} className="bg-white px-3 py-1 rounded-lg text-slate-700 font-medium text-sm border border-green-100">
+                  {word}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
           <Button
             onClick={onRetry}
             className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
           >
-            🔄 Recommencer
+            Recommencer
           </Button>
           <Button
             variant="secondary"
             onClick={onNew}
             className="flex-1"
           >
-            📝 Nouvelle dictée
+            Nouvelle dictée
           </Button>
         </div>
       </div>

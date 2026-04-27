@@ -441,12 +441,28 @@ export const TeacherDashboard = () => {
               />
             </div>
             <p className="text-center font-mono font-bold text-indigo-600 text-lg mb-4">{qrCode}</p>
-            <button
-              onClick={() => setQrCode(null)}
-              className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-600 font-medium transition-colors"
-            >
-              Fermer
-            </button>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <button
+                onClick={() => {
+                  const url = `https://spellio-mu.vercel.app?code=${qrCode}`;
+                  if (navigator.share) {
+                    navigator.share({ title: 'Dictée Spellio', text: `Fais ta dictée sur Spellio avec le code ${qrCode}`, url });
+                  } else {
+                    navigator.clipboard.writeText(url);
+                    alert('Lien copié !');
+                  }
+                }}
+                className="py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-white font-medium transition-colors"
+              >
+                Partager
+              </button>
+              <button
+                onClick={() => setQrCode(null)}
+                className="py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-600 font-medium transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}

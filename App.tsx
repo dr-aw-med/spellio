@@ -191,6 +191,7 @@ function App() {
       case AppStep.FINISHED:
         return (
           <FinishScreen
+            words={words}
             onRetry={() => setStep(AppStep.CHOOSE_MODE)}
             onNew={() => {
               setWords([]);
