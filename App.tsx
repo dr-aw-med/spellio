@@ -211,7 +211,10 @@ function App() {
         onHome={handleHome}
         onLogoClick={handleLogout}
         userRole={userRole}
-        showHome={!(userRole === 'STUDENT' && step === AppStep.UPLOAD)}
+        showHome={
+          !(userRole === 'STUDENT' && step === AppStep.UPLOAD) &&
+          !(userRole === 'TEACHER' && step === AppStep.TEACHER_DASHBOARD)
+        }
       />
       <main className="container mx-auto max-w-3xl pt-6 px-4">
         {renderContent()}
