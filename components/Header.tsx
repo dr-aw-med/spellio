@@ -12,14 +12,14 @@ interface HeaderProps {
 
 export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = true, activeChildName, onChildProfile }: HeaderProps) => {
   return (
-    <header className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-lg border-b border-white/50 sticky top-0 z-10">
+    <header className="flex justify-between items-center px-3 py-3 sm:p-4 bg-white/80 backdrop-blur-lg border-b border-white/50 sticky top-0 z-10 gap-2">
       <div
-        className="flex items-center gap-2.5 cursor-pointer group"
+        className="flex items-center gap-2 cursor-pointer group shrink-0"
         onClick={onLogoClick}
         role="button"
         title="Retour à l'accueil"
       >
-        <div className="relative w-9 h-9 flex items-center justify-center">
+        <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
           <svg viewBox="0 0 40 40" className="w-full h-full transition-transform group-hover:scale-110 duration-300">
             <defs>
               <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -32,17 +32,17 @@ export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = tru
             <text x="20" y="27" textAnchor="middle" fontSize="22" fontWeight="bold" fill="white" fontFamily="Fredoka, sans-serif">S</text>
           </svg>
         </div>
-        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 tracking-tight">
+        <span className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 tracking-tight hidden sm:inline">
           Spellio
         </span>
       </div>
 
       {userRole && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           {activeChildName && (
             <button
               onClick={onChildProfile}
-              className="text-sm font-medium text-pink-600 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-100 hover:bg-pink-100 transition-colors"
+              className="text-xs sm:text-sm font-medium text-pink-600 bg-pink-50 px-2.5 py-1.5 rounded-full border border-pink-100 hover:bg-pink-100 transition-colors truncate max-w-[140px]"
               title="Mon profil"
             >
               {activeChildName}
@@ -52,7 +52,7 @@ export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = tru
           {showHome && (
             <button
               onClick={onHome}
-              className="flex items-center gap-1.5 text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-full transition-colors"
+              className="flex items-center gap-1 text-xs sm:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors shrink-0"
               title="Accueil"
             >
               <span className="text-base">🏠</span>
@@ -61,9 +61,9 @@ export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = tru
           )}
           <button
             onClick={onLogout}
-            className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-full hover:bg-red-50 uppercase tracking-wide"
+            className="text-[10px] sm:text-xs font-bold text-slate-400 hover:text-red-500 transition-colors px-2 py-1.5 rounded-full hover:bg-red-50 uppercase tracking-wide shrink-0"
           >
-            {userRole === 'STUDENT' ? 'Changer' : 'Déconnexion'}
+            {userRole === 'STUDENT' ? 'Changer' : 'Déco.'}
           </button>
         </div>
       )}
