@@ -433,7 +433,7 @@ export const TeacherDashboard = () => {
             </p>
             <div className="flex justify-center mb-4">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://spellio-mu.vercel.app?code=${qrCode}`)}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://spellio.org?code=${qrCode}`)}`}
                 alt={`QR Code pour le code ${qrCode}`}
                 className="rounded-xl"
                 width={200}
@@ -444,7 +444,7 @@ export const TeacherDashboard = () => {
             <div className="grid grid-cols-2 gap-3 mb-3">
               <button
                 onClick={() => {
-                  const url = `https://spellio-mu.vercel.app?code=${qrCode}`;
+                  const url = `https://spellio.org?code=${qrCode}`;
                   if (navigator.share) {
                     navigator.share({ title: 'Dictée Spellio', text: `Fais ta dictée sur Spellio avec le code ${qrCode}`, url });
                   } else {
