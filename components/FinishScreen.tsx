@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Button } from './Button';
+import { Child } from '../types';
+import { saveResult } from '../services/childService';
 
 interface FinishScreenProps {
   onRetry: () => void;
+  onRetryChild?: () => void;
   onNew: () => void;
   words: string[];
+  activeChild: Child | null;
+  dictationCode?: string;
+  dictationTitle?: string;
+  mode?: 'word' | 'story';
 }
 
 const CONFETTI = [
@@ -20,11 +27,13 @@ const CONFETTI = [
   { emoji: '🎊', left: '35%', delay: '0.45s', duration: '2.1s' },
 ];
 
-export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
+export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild, dictationCode, dictationTitle, mode }: FinishScreenProps) => {
   const [showContent, setShowContent] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
   const [mistakes, setMistakes] = useState<number | null>(null);
   const [mistakesInput, setMistakesInput] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 300);
@@ -34,10 +43,27 @@ export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
   const totalWords = words.length;
   const score = mistakes !== null ? Math.round(((totalWords - mistakes) / totalWords) * 100) : null;
 
-  const handleMistakesSubmit = () => {
+  const handleMistakesSubmit = async () => {
     const n = parseInt(mistakesInput);
-    if (!isNaN(n) && n >= 0 && n <= totalWords) {
-      setMistakes(n);
+    if (isNaN(n) || n < 0 || n > totalWords) return;
+
+    setMistakes(n);
+
+    // Sauvegarde automatique si enfant actif
+    if (activeChild) {
+      try {
+        await saveResult(
+          activeChild.id,
+          dictationCode || 'MANUAL',
+          dictationTitle || 'Dictée',
+          mode || 'word',
+          totalWords,
+          n
+        );
+        setSaved(true);
+      } catch {
+        setSaveError(true);
+      }
     }
   };
 
@@ -120,6 +146,16 @@ export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
                mistakes === 1 ? '1 seule faute, c\'est presque parfait !' :
                `${mistakes} fautes sur ${totalWords} mots`}
             </p>
+            {saved && (
+              <p className="text-xs text-green-600 font-medium mt-2 flex items-center justify-center gap-1 animate-fade-in">
+                Sauvegardé ✓
+              </p>
+            )}
+            {saveError && (
+              <p className="text-xs text-red-400 font-medium mt-2 text-center animate-fade-in">
+                Erreur de sauvegarde
+              </p>
+            )}
           </div>
         )}
 
@@ -144,17 +180,26 @@ export const FinishScreen = ({ onRetry, onNew, words }: FinishScreenProps) => {
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full">
+        <div className="flex flex-col gap-3 w-full">
           <Button
             onClick={onRetry}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
           >
             Recommencer
           </Button>
+          {activeChild && onRetryChild && (
+            <Button
+              variant="secondary"
+              onClick={onRetryChild}
+              className="w-full"
+            >
+              Encore une dictée pour {activeChild.first_name}
+            </Button>
+          )}
           <Button
             variant="secondary"
             onClick={onNew}
-            className="flex-1"
+            className="w-full"
           >
             Nouvelle dictée
           </Button>

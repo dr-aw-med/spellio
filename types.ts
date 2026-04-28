@@ -1,6 +1,8 @@
 export enum AppStep {
   LOGIN = 'LOGIN',
   TEACHER_DASHBOARD = 'TEACHER_DASHBOARD',
+  CHILD_SELECT = 'CHILD_SELECT',
+  PARENT_DASHBOARD = 'PARENT_DASHBOARD',
   UPLOAD = 'UPLOAD',
   VERIFY = 'VERIFY',
   CHOOSE_MODE = 'CHOOSE_MODE',
@@ -27,4 +29,26 @@ export interface Dictation {
   created_at: string;
 }
 
-export type UserRole = 'STUDENT' | 'TEACHER' | null;
+export interface Child {
+  id: string;
+  parent_id: string;
+  first_name: string;
+  avatar: string;
+  school_level: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DictationResult {
+  id: string;
+  child_id: string;
+  dictation_code: string;
+  dictation_title: string;
+  mode: 'word' | 'story';
+  total_words: number;
+  mistakes: number;
+  score: number;
+  completed_at: string;
+}
+
+export type UserRole = 'STUDENT' | 'TEACHER' | 'PARENT' | null;

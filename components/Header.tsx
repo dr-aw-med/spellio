@@ -6,9 +6,10 @@ interface HeaderProps {
   onLogoClick: () => void;
   userRole: UserRole;
   showHome?: boolean;
+  activeChildName?: string;
 }
 
-export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = true }: HeaderProps) => {
+export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = true, activeChildName }: HeaderProps) => {
   return (
     <header className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-10">
       <div
@@ -36,6 +37,13 @@ export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = tru
 
       {userRole && (
         <div className="flex items-center gap-2">
+          {/* Badge enfant actif (mode parent) */}
+          {userRole === 'PARENT' && activeChildName && (
+            <span className="text-sm font-medium text-pink-600 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-100">
+              {activeChildName}
+            </span>
+          )}
+
           {showHome && (
             <button
               onClick={onHome}

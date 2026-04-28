@@ -3,19 +3,21 @@ import { Button } from './Button';
 import { signIn, signUp, resetPassword } from '../services/authService';
 
 interface LoginScreenProps {
-  onSelectRole: (role: 'STUDENT' | 'TEACHER') => void;
+  onSelectRole: (role: 'STUDENT' | 'TEACHER' | 'PARENT', firstName?: string) => void;
 }
 
 export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
-  const [showTeacherAuth, setShowTeacherAuth] = useState(false);
+  const [showAuthForm, setShowAuthForm] = useState(false);
+  const [authIntent, setAuthIntent] = useState<'TEACHER' | 'PARENT'>('TEACHER');
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleTeacherAuth = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -30,14 +32,24 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
       return;
     }
 
+    if (isSignUp && authIntent === 'PARENT' && !firstName.trim()) {
+      setError('Le prénom est obligatoire');
+      return;
+    }
+
     setIsLoading(true);
     try {
       if (isSignUp) {
-        await signUp(email, password);
+        const role = authIntent;
+        await signUp(email, password, role, role === 'PARENT' ? firstName : undefined);
+        onSelectRole(role, role === 'PARENT' ? firstName : undefined);
       } else {
-        await signIn(email, password);
+        // A la connexion, le rôle vient des métadonnées du compte
+        const user = await signIn(email, password);
+        if (!user.role) throw new Error('Compte sans rôle. Contactez le support.');
+        const role = user.role;
+        onSelectRole(role, user.firstName || undefined);
       }
-      onSelectRole('TEACHER');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de connexion');
     } finally {
@@ -65,26 +77,55 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
     }
   };
 
-  if (showTeacherAuth) {
+  const openAuthForm = (intent: 'TEACHER' | 'PARENT') => {
+    setAuthIntent(intent);
+    setShowAuthForm(true);
+    setIsSignUp(false);
+    setEmail('');
+    setPassword('');
+    setFirstName('');
+    setError('');
+    setSuccess('');
+  };
+
+  if (showAuthForm) {
+    const isParentSignUp = isSignUp && authIntent === 'PARENT';
+
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in p-6">
         <div className="w-full max-w-sm">
           <button
-            onClick={() => { setShowTeacherAuth(false); setError(''); setSuccess(''); }}
+            onClick={() => { setShowAuthForm(false); setError(''); setSuccess(''); }}
             className="text-sm text-slate-400 hover:text-indigo-500 mb-6 flex items-center gap-1"
           >
             ← Retour
           </button>
 
           <div className="text-center mb-8">
-            <div className="text-5xl mb-3">🧑‍🏫</div>
+            <div className="text-5xl mb-3">{authIntent === 'PARENT' ? '👨‍👩‍👧‍👦' : '🧑‍🏫'}</div>
             <h2 className="text-2xl font-bold text-slate-800">
               {isSignUp ? 'Créer un compte' : 'Se connecter'}
             </h2>
-            <p className="text-slate-500 mt-1">Espace enseignant</p>
+            <p className="text-slate-500 mt-1">
+              {authIntent === 'PARENT' ? 'Espace parent' : 'Espace enseignant'}
+            </p>
           </div>
 
-          <form onSubmit={handleTeacherAuth} className="space-y-4">
+          <form onSubmit={handleAuth} className="space-y-4">
+            {isParentSignUp && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Prénom</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  placeholder="Ton prénom"
+                  autoComplete="given-name"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
               <input
@@ -92,7 +133,7 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                placeholder="enseignant@école.fr"
+                placeholder={authIntent === 'PARENT' ? 'parent@email.fr' : 'enseignant@école.fr'}
                 autoComplete="email"
               />
             </div>
@@ -153,18 +194,27 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
       <h2 className="text-3xl font-bold text-slate-800 mb-2 text-center">Qui es-tu ?</h2>
       <p className="text-slate-500 text-center mb-10">Bienvenue sur Spellio !</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
         <button
           onClick={() => onSelectRole('STUDENT')}
           className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-400 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
         >
           <div className="text-6xl mb-4 group-hover:animate-bounce animate-wiggle">🎒</div>
-          <h3 className="text-2xl font-bold text-indigo-900">Je suis un Élève</h3>
+          <h3 className="text-2xl font-bold text-indigo-900">Je suis Élève</h3>
           <p className="text-slate-500 mt-2 text-center">Je veux m'entraîner avec ma dictée.</p>
         </button>
 
         <button
-          onClick={() => setShowTeacherAuth(true)}
+          onClick={() => openAuthForm('PARENT')}
+          className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-lg border-2 border-transparent hover:border-pink-400 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+        >
+          <div className="text-6xl mb-4 group-hover:animate-bounce animate-wiggle" style={{ animationDelay: '0.25s' }}>👨‍👩‍👧‍👦</div>
+          <h3 className="text-2xl font-bold text-indigo-900">Je suis Parent</h3>
+          <p className="text-slate-500 mt-2 text-center">Je suis les progrès de mes enfants.</p>
+        </button>
+
+        <button
+          onClick={() => openAuthForm('TEACHER')}
           className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-400 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
         >
           <div className="text-6xl mb-4 group-hover:animate-bounce animate-wiggle" style={{ animationDelay: '0.5s' }}>🧑‍🏫</div>

@@ -1,20 +1,36 @@
 import { supabase } from './supabaseClient';
+import { UserRole } from '../types';
 
 export interface AuthUser {
   id: string;
   email: string;
+  role: 'TEACHER' | 'PARENT' | null;
+  firstName: string | null;
 }
 
-export async function signUp(email: string, password: string): Promise<AuthUser> {
+export async function signUp(
+  email: string,
+  password: string,
+  role: 'TEACHER' | 'PARENT',
+  firstName?: string
+): Promise<AuthUser> {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: { role, first_name: firstName || null },
+    },
   });
 
   if (error) throw new Error(error.message);
-  if (!data.user) throw new Error('Erreur lors de la creation du compte');
+  if (!data.user) throw new Error('Erreur lors de la création du compte');
 
-  return { id: data.user.id, email: data.user.email! };
+  return {
+    id: data.user.id,
+    email: data.user.email!,
+    role,
+    firstName: firstName || null,
+  };
 }
 
 export async function signIn(email: string, password: string): Promise<AuthUser> {
@@ -30,7 +46,13 @@ export async function signIn(email: string, password: string): Promise<AuthUser>
     throw new Error(error.message);
   }
 
-  return { id: data.user.id, email: data.user.email! };
+  const meta = data.user.user_metadata;
+  return {
+    id: data.user.id,
+    email: data.user.email!,
+    role: meta?.role || null,
+    firstName: meta?.first_name || null,
+  };
 }
 
 export async function resetPassword(email: string): Promise<void> {
@@ -50,8 +72,3 @@ export async function updatePassword(newPassword: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-export async function getCurrentUser(): Promise<AuthUser | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  return { id: user.id, email: user.email! };
-}

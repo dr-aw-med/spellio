@@ -7,12 +7,14 @@ import { WordDictation } from './components/WordDictation';
 import { StoryDictation } from './components/StoryDictation';
 import { LoginScreen } from './components/LoginScreen';
 import { TeacherDashboard } from './components/TeacherDashboard';
+import { ChildSelect } from './components/ChildSelect';
+import { ParentDashboard } from './components/ParentDashboard';
 import { ResetPassword } from './components/ResetPassword';
 import { FinishScreen } from './components/FinishScreen';
 import { Modal } from './components/Modal';
 import { extractWordsFromImage } from './services/api';
 import { signOut } from './services/authService';
-import { AppStep, UserRole } from './types';
+import { AppStep, UserRole, Child } from './types';
 
 interface ModalState {
   isOpen: boolean;
@@ -22,12 +24,21 @@ interface ModalState {
   onConfirm?: () => void;
 }
 
+interface DictationMeta {
+  code: string;
+  title: string;
+  mode: 'word' | 'story';
+}
+
 function App() {
   const [step, setStep] = useState<AppStep>(AppStep.LOGIN);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [words, setWords] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [activeChild, setActiveChild] = useState<Child | null>(null);
+  const [parentName, setParentName] = useState<string | null>(null);
+  const [dictationMeta, setDictationMeta] = useState<DictationMeta | null>(null);
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     title: '',
@@ -35,12 +46,10 @@ function App() {
     variant: 'info',
   });
 
-  // Détecter le token de reset password dans l'URL
   useEffect(() => {
     const hash = window.location.hash;
     if (hash.includes('type=recovery')) {
       setShowResetPassword(true);
-      // Nettoyer l'URL
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
@@ -53,16 +62,33 @@ function App() {
     setModal(prev => ({ ...prev, isOpen: false }));
   };
 
+  // Navigation centralisée par rôle
+  const navigateToRoleHome = () => {
+    setWords([]);
+    setDictationMeta(null);
+    if (userRole === 'TEACHER') {
+      setStep(AppStep.TEACHER_DASHBOARD);
+    } else if (userRole === 'PARENT') {
+      setActiveChild(null);
+      setStep(AppStep.CHILD_SELECT);
+    } else {
+      setStep(AppStep.UPLOAD);
+    }
+  };
+
   const handleLogout = () => {
     showModal(
       'Se déconnecter ?',
       'Tu vas revenir à l\'écran d\'accueil.',
       'info',
       async () => {
-        if (userRole === 'TEACHER') await signOut();
+        if (userRole === 'TEACHER' || userRole === 'PARENT') await signOut();
         setStep(AppStep.LOGIN);
         setUserRole(null);
         setWords([]);
+        setActiveChild(null);
+        setParentName(null);
+        setDictationMeta(null);
         closeModal();
       }
     );
@@ -71,35 +97,41 @@ function App() {
   const handleHome = () => {
     const inDictation = step === AppStep.DICTATION_WORD || step === AppStep.DICTATION_STORY;
 
-    const goHome = () => {
-      setWords([]);
-      if (userRole === 'TEACHER') {
-        setStep(AppStep.TEACHER_DASHBOARD);
-      } else {
-        setStep(AppStep.UPLOAD);
-      }
-      closeModal();
-    };
-
     if (inDictation) {
       showModal(
         'Arrêter la dictée ?',
         'Ta progression ne sera pas sauvegardée.',
         'warning',
-        goHome
+        () => { navigateToRoleHome(); closeModal(); }
       );
     } else {
-      goHome();
+      navigateToRoleHome();
     }
   };
 
-  const handleRoleSelect = (role: UserRole) => {
+  const handleRoleSelect = (role: UserRole, firstName?: string) => {
     setUserRole(role);
     if (role === 'TEACHER') {
       setStep(AppStep.TEACHER_DASHBOARD);
+    } else if (role === 'PARENT') {
+      setParentName(firstName || null);
+      setStep(AppStep.CHILD_SELECT);
     } else {
       setStep(AppStep.UPLOAD);
     }
+  };
+
+  const handleChildSelected = (child: Child) => {
+    setActiveChild(child);
+    setStep(AppStep.UPLOAD);
+  };
+
+  const handleSignupPrompt = () => {
+    showModal(
+      'Mode réservé !',
+      'L\'histoire magique est gratuite avec un compte Parent. Crée-en un depuis l\'accueil !',
+      'info'
+    );
   };
 
   const handleImageSelected = async (base64: string, mimeType: string) => {
@@ -124,8 +156,9 @@ function App() {
     setStep(AppStep.CHOOSE_MODE);
   };
 
-  const handleCodeValidated = (loadedWords: string[]) => {
+  const handleCodeValidated = (loadedWords: string[], code?: string, title?: string) => {
     setWords(loadedWords);
+    setDictationMeta(prev => ({ ...prev, code: code || 'MANUAL', title: title || 'Dictée', mode: prev?.mode || 'word' }));
     setStep(AppStep.CHOOSE_MODE);
   };
 
@@ -133,11 +166,10 @@ function App() {
     setStep(AppStep.FINISHED);
   };
 
-  // Écran de reset password
   if (showResetPassword) {
     return (
       <div className="min-h-screen bg-slate-50 font-[Fredoka] text-slate-900 pb-10">
-        <Header onLogout={() => {}} onHome={() => {}} userRole={null} />
+        <Header onLogout={() => {}} onHome={() => {}} onLogoClick={() => {}} userRole={null} />
         <main className="container mx-auto max-w-3xl pt-6 px-4">
           <ResetPassword onDone={() => {
             setShowResetPassword(false);
@@ -154,6 +186,21 @@ function App() {
         return <LoginScreen onSelectRole={handleRoleSelect} />;
       case AppStep.TEACHER_DASHBOARD:
         return <TeacherDashboard />;
+      case AppStep.CHILD_SELECT:
+        return (
+          <ChildSelect
+            onSelectChild={handleChildSelected}
+            onViewProgress={() => setStep(AppStep.PARENT_DASHBOARD)}
+            parentName={parentName}
+          />
+        );
+      case AppStep.PARENT_DASHBOARD:
+        return (
+          <ParentDashboard
+            onBack={() => setStep(AppStep.CHILD_SELECT)}
+            onSelectChild={handleChildSelected}
+          />
+        );
       case AppStep.UPLOAD:
         return (
           <ImageUploader
@@ -171,7 +218,17 @@ function App() {
           />
         );
       case AppStep.CHOOSE_MODE:
-        return <ModeSelector onSelect={setStep} />;
+        return (
+          <ModeSelector
+            onSelect={(s) => {
+              const mode = s === AppStep.DICTATION_STORY ? 'story' : 'word';
+              setDictationMeta(prev => ({ code: prev?.code || 'MANUAL', title: prev?.title || 'Dictée', mode }));
+              setStep(s);
+            }}
+            userRole={userRole}
+            onSignupPrompt={handleSignupPrompt}
+          />
+        );
       case AppStep.DICTATION_WORD:
         return (
           <WordDictation
@@ -192,11 +249,13 @@ function App() {
         return (
           <FinishScreen
             words={words}
+            activeChild={activeChild}
+            dictationCode={dictationMeta?.code}
+            dictationTitle={dictationMeta?.title}
+            mode={dictationMeta?.mode}
             onRetry={() => setStep(AppStep.CHOOSE_MODE)}
-            onNew={() => {
-              setWords([]);
-              setStep(userRole === 'TEACHER' ? AppStep.TEACHER_DASHBOARD : AppStep.UPLOAD);
-            }}
+            onRetryChild={() => setStep(AppStep.UPLOAD)}
+            onNew={navigateToRoleHome}
           />
         );
       default:
@@ -211,9 +270,11 @@ function App() {
         onHome={handleHome}
         onLogoClick={handleLogout}
         userRole={userRole}
+        activeChildName={activeChild ? `${activeChild.avatar} ${activeChild.first_name}` : undefined}
         showHome={
           !(userRole === 'STUDENT' && step === AppStep.UPLOAD) &&
-          !(userRole === 'TEACHER' && step === AppStep.TEACHER_DASHBOARD)
+          !(userRole === 'TEACHER' && step === AppStep.TEACHER_DASHBOARD) &&
+          !(userRole === 'PARENT' && step === AppStep.CHILD_SELECT)
         }
       />
       <main className="container mx-auto max-w-3xl pt-6 px-4">
