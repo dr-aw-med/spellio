@@ -15,6 +15,7 @@ import { ChildProfile } from './components/ChildProfile';
 import { Modal } from './components/Modal';
 import { extractWordsFromImage } from './services/api';
 import { signOut } from './services/authService';
+import { supabase } from './services/supabaseClient';
 import { AppStep, UserRole, Child } from './types';
 
 interface ModalState {
@@ -42,6 +43,7 @@ function App() {
   const [dictationMeta, setDictationMeta] = useState<DictationMeta | null>(null);
   const [storyIllustration, setStoryIllustration] = useState<string | null>(null);
   const [storyText, setStoryText] = useState<string | null>(null);
+  const [userIsPremium, setUserIsPremium] = useState(false);
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     title: '',
@@ -53,6 +55,16 @@ function App() {
     const hash = window.location.hash;
     if (hash.includes('type=recovery')) {
       setShowResetPassword(true);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
+    // Retour de Stripe Checkout
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      setUserIsPremium(true);
+      showModal('Bienvenue en Premium !', 'L\'Histoire Magique est maintenant débloquée.', 'success');
+      window.history.replaceState(null, '', window.location.pathname);
+    } else if (params.get('payment') === 'cancel') {
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
@@ -114,8 +126,15 @@ function App() {
     }
   };
 
-  const handleRoleSelect = (role: UserRole, firstName?: string) => {
+  const handleRoleSelect = async (role: UserRole, firstName?: string) => {
     setUserRole(role);
+
+    // Vérifier le statut premium
+    if (role === 'PARENT' || role === 'TEACHER') {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.is_premium) setUserIsPremium(true);
+    }
+
     if (role === 'TEACHER') {
       setStep(AppStep.TEACHER_DASHBOARD);
     } else if (role === 'PARENT') {
@@ -237,6 +256,7 @@ function App() {
             userRole={userRole}
             onSignupPrompt={handleSignupPrompt}
             hasActiveChild={!!activeChild}
+            isPremium={userIsPremium}
           />
         );
       case AppStep.DICTATION_WORD:
