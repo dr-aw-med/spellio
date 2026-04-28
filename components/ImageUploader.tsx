@@ -129,7 +129,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
   return (
     <div className="flex flex-col items-center justify-center p-6 w-full max-w-md mx-auto animate-fade-in gap-8">
       {/* Option 1: Code */}
-      <div className="w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="w-full bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
         <h3 className="text-lg font-bold text-indigo-900 mb-3 text-center">J'ai un code dictée</h3>
         <div className="flex gap-2">
           <input
@@ -137,11 +137,11 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Ex: AB12CD"
-            className="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none uppercase font-mono text-center tracking-wider font-bold"
+            className="flex-1 min-w-0 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none uppercase font-mono text-center tracking-wider font-bold"
             maxLength={6}
             onKeyDown={(e) => e.key === 'Enter' && handleCodeSubmit()}
           />
-          <Button onClick={handleCodeSubmit} disabled={code.length < 3 || isCheckingCode}>
+          <Button onClick={handleCodeSubmit} disabled={code.length < 3 || isCheckingCode} className="px-4 shrink-0">
             {isCheckingCode ? '...' : 'Go'}
           </Button>
         </div>
