@@ -4,6 +4,7 @@ import { getDictationByCode } from '../services/storageService';
 import { compressImage } from '../utils/imageUtils';
 import { Child, DictationResult } from '../types';
 import { getChildResults, getChildByPin } from '../services/childService';
+import { BarChart3, Camera, FileText } from 'lucide-react';
 
 interface ImageUploaderProps {
   onImageSelected: (base64: string, mimeType: string) => void;
@@ -169,10 +170,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
             <img src={preview} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity" />
           ) : (
             <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
-              <svg className={`w-10 h-10 mb-3 transition-colors ${isDragging ? 'text-indigo-600' : 'text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <Camera className={`w-10 h-10 mb-3 transition-colors ${isDragging ? 'text-indigo-600' : 'text-indigo-400'}`} strokeWidth={1.5} />
               <p className="mb-1 text-sm text-slate-500 font-semibold">
                 {isDragging ? 'Dépose la photo ici !' : 'Touche ou glisse une photo'}
               </p>
@@ -244,7 +242,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
             onClick={handleToggleHistory}
             className="w-full text-sm font-medium text-indigo-500 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5"
           >
-            <span>📊</span>
+            <BarChart3 size={16} />
             {showHistory ? 'Masquer l\'historique' : `Mes dictées`}
           </button>
 
@@ -257,7 +255,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
                 </div>
               ) : history.length === 0 ? (
                 <div className="p-6 text-center">
-                  <div className="text-3xl mb-2">📝</div>
+                  <FileText size={32} className="text-slate-300 mx-auto mb-2" />
                   <p className="text-sm text-slate-400">Pas encore de dictées !</p>
                 </div>
               ) : (

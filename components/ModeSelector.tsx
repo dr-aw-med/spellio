@@ -1,4 +1,5 @@
 import { AppStep, UserRole } from '../types';
+import { Turtle, BookOpen, Lock } from 'lucide-react';
 
 interface ModeSelectorProps {
   onSelect: (step: AppStep) => void;
@@ -22,8 +23,8 @@ export const ModeSelector = ({ onSelect, userRole, onSignupPrompt, hasActiveChil
         className="animate-fade-in-up group relative bg-gradient-to-br from-sky-50 to-blue-50 border-2 border-sky-200 hover:border-sky-400 rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg text-left"
         style={{ animationDelay: '100ms' }}
       >
-        <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-md shadow-sky-200 group-hover:scale-110 transition-transform">
-          <span className="text-2xl">🐢</span>
+        <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-md shadow-sky-200 group-hover:scale-110 transition-transform text-white">
+          <Turtle size={24} />
         </div>
         <h3 className="text-xl font-bold text-sky-800 mb-2">Mot à mot</h3>
         <p className="text-slate-500 text-sm leading-relaxed">Je te dicte les mots un par un. On prend notre temps.</p>
@@ -39,9 +40,9 @@ export const ModeSelector = ({ onSelect, userRole, onSignupPrompt, hasActiveChil
         style={{ animationDelay: '220ms' }}
       >
         <div className={`absolute top-4 right-4 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform ${
-          isStoryLocked ? 'bg-slate-200' : 'bg-white/20'
+          isStoryLocked ? 'bg-slate-200 text-slate-400' : 'bg-white/20 text-white'
         }`}>
-          <span className="text-2xl">{isStoryLocked ? '🔒' : '📚'}</span>
+          {isStoryLocked ? <Lock size={24} /> : <BookOpen size={24} />}
         </div>
         <h3 className={`text-xl font-bold mb-2 ${isStoryLocked ? 'text-slate-500' : 'text-white'}`}>
           Histoire magique

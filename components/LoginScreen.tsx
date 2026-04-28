@@ -1,10 +1,41 @@
 import { useState } from 'react';
 import { Button } from './Button';
 import { signIn, signUp, resetPassword } from '../services/authService';
+import { Backpack, Users, GraduationCap, ArrowLeft } from 'lucide-react';
 
 interface LoginScreenProps {
   onSelectRole: (role: 'STUDENT' | 'TEACHER' | 'PARENT', firstName?: string) => void;
 }
+
+const ROLE_CARDS = [
+  {
+    role: 'STUDENT' as const,
+    icon: Backpack,
+    title: 'Élève',
+    desc: 'Je m\'entraîne avec ma dictée.',
+    color: 'text-sky-500',
+    hoverBorder: 'hover:border-sky-400',
+    needsAuth: false,
+  },
+  {
+    role: 'PARENT' as const,
+    icon: Users,
+    title: 'Parent',
+    desc: 'Je suis les progrès de mes enfants.',
+    color: 'text-pink-500',
+    hoverBorder: 'hover:border-pink-400',
+    needsAuth: true,
+  },
+  {
+    role: 'TEACHER' as const,
+    icon: GraduationCap,
+    title: 'Enseignant',
+    desc: 'Je crée et partage des dictées.',
+    color: 'text-violet-500',
+    hoverBorder: 'hover:border-violet-400',
+    needsAuth: true,
+  },
+];
 
 export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
   const [showAuthForm, setShowAuthForm] = useState(false);
@@ -87,8 +118,11 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
     setSuccess('');
   };
 
+  const currentCard = ROLE_CARDS.find(c => c.role === authIntent);
+
   if (showAuthForm) {
     const isParentSignUp = isSignUp && authIntent === 'PARENT';
+    const AuthIcon = currentCard?.icon || Users;
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in p-6">
@@ -97,11 +131,13 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
             onClick={() => { setShowAuthForm(false); setError(''); setSuccess(''); }}
             className="text-sm text-slate-400 hover:text-indigo-500 mb-6 flex items-center gap-1"
           >
-            ← Retour
+            <ArrowLeft size={16} /> Retour
           </button>
 
           <div className="text-center mb-8">
-            <div className="text-5xl mb-3">{authIntent === 'PARENT' ? '👨‍👩‍👧‍👦' : '🧑‍🏫'}</div>
+            <div className={`w-16 h-16 rounded-2xl ${currentCard?.color} bg-slate-50 flex items-center justify-center mx-auto mb-4`}>
+              <AuthIcon size={32} />
+            </div>
             <h2 className="text-2xl font-bold text-indigo-700">
               {isSignUp ? 'Créer un compte' : 'Se connecter'}
             </h2>
@@ -190,43 +226,28 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in p-4 sm:p-6">
-      <div className="text-4xl sm:text-5xl mb-2 animate-wiggle">👋</div>
       <h2 className="text-2xl sm:text-3xl font-bold text-indigo-600 mb-1 text-center">Qui es-tu ?</h2>
       <p className="text-slate-400 text-center mb-6 sm:mb-10 text-sm">Choisis pour commencer !</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 w-full max-w-3xl">
-        <button
-          onClick={() => onSelectRole('STUDENT')}
-          className="flex flex-row sm:flex-col items-center gap-4 sm:gap-0 p-5 sm:p-8 bg-white rounded-2xl sm:rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-400 hover:shadow-xl transition-all duration-300 group text-left sm:text-center"
-        >
-          <div className="text-4xl sm:text-6xl sm:mb-4 group-hover:animate-bounce animate-wiggle shrink-0">🎒</div>
-          <div>
-            <h3 className="text-lg sm:text-2xl font-bold text-indigo-900">Je suis Élève</h3>
-            <p className="text-slate-500 text-sm sm:mt-2">Je veux m'entraîner avec ma dictée.</p>
-          </div>
-        </button>
-
-        <button
-          onClick={() => openAuthForm('PARENT')}
-          className="flex flex-row sm:flex-col items-center gap-4 sm:gap-0 p-5 sm:p-8 bg-white rounded-2xl sm:rounded-3xl shadow-lg border-2 border-transparent hover:border-pink-400 hover:shadow-xl transition-all duration-300 group text-left sm:text-center"
-        >
-          <div className="text-4xl sm:text-6xl sm:mb-4 group-hover:animate-bounce animate-wiggle shrink-0" style={{ animationDelay: '0.25s' }}>👨‍👩‍👧‍👦</div>
-          <div>
-            <h3 className="text-lg sm:text-2xl font-bold text-indigo-900">Je suis Parent</h3>
-            <p className="text-slate-500 text-sm sm:mt-2">Je suis les progrès de mes enfants.</p>
-          </div>
-        </button>
-
-        <button
-          onClick={() => openAuthForm('TEACHER')}
-          className="flex flex-row sm:flex-col items-center gap-4 sm:gap-0 p-5 sm:p-8 bg-white rounded-2xl sm:rounded-3xl shadow-lg border-2 border-transparent hover:border-indigo-400 hover:shadow-xl transition-all duration-300 group text-left sm:text-center"
-        >
-          <div className="text-4xl sm:text-6xl sm:mb-4 group-hover:animate-bounce animate-wiggle shrink-0" style={{ animationDelay: '0.5s' }}>🧑‍🏫</div>
-          <div>
-            <h3 className="text-lg sm:text-2xl font-bold text-indigo-900">Je suis Professeur</h3>
-            <p className="text-slate-500 text-sm sm:mt-2">Je veux créer et partager des dictées.</p>
-          </div>
-        </button>
+        {ROLE_CARDS.map((card) => {
+          const Icon = card.icon;
+          return (
+            <button
+              key={card.role}
+              onClick={() => card.needsAuth ? openAuthForm(card.role as 'TEACHER' | 'PARENT') : onSelectRole(card.role)}
+              className={`flex flex-row sm:flex-col items-center gap-4 sm:gap-0 p-5 sm:p-8 bg-white rounded-2xl sm:rounded-3xl shadow-lg border-2 border-transparent ${card.hoverBorder} hover:shadow-xl transition-all duration-300 group text-left sm:text-center`}
+            >
+              <div className={`${card.color} sm:mb-4 shrink-0`}>
+                <Icon size={40} strokeWidth={1.5} className="sm:w-12 sm:h-12" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-2xl font-bold text-indigo-900">{card.title}</h3>
+                <p className="text-slate-500 text-sm sm:mt-2">{card.desc}</p>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

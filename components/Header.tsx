@@ -1,4 +1,5 @@
 import { UserRole } from '../types';
+import { Home, LogOut, RefreshCw } from 'lucide-react';
 
 interface HeaderProps {
   onLogout: () => void;
@@ -52,18 +53,19 @@ export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = tru
           {showHome && (
             <button
               onClick={onHome}
-              className="flex items-center gap-1 text-xs sm:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors shrink-0"
+              className="flex items-center gap-1 text-xs sm:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full transition-colors shrink-0"
               title="Accueil"
             >
-              <span className="text-base">🏠</span>
+              <Home size={16} />
               <span className="hidden sm:inline">Accueil</span>
             </button>
           )}
           <button
             onClick={onLogout}
-            className="text-[10px] sm:text-xs font-bold text-slate-400 hover:text-red-500 transition-colors px-2 py-1.5 rounded-full hover:bg-red-50 uppercase tracking-wide shrink-0"
+            className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-400 hover:text-red-500 transition-colors px-2 py-1.5 rounded-full hover:bg-red-50 uppercase tracking-wide shrink-0"
           >
-            {userRole === 'STUDENT' ? 'Changer' : 'Déco.'}
+            {userRole === 'STUDENT' ? <RefreshCw size={14} /> : <LogOut size={14} />}
+            <span className="hidden sm:inline">{userRole === 'STUDENT' ? 'Changer' : 'Déco.'}</span>
           </button>
         </div>
       )}
