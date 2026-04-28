@@ -214,6 +214,7 @@ function App() {
             onCodeValidated={handleCodeValidated}
             isProcessing={isProcessing}
             activeChild={activeChild}
+            onChildLogin={(child) => setActiveChild(child)}
           />
         );
       case AppStep.VERIFY:

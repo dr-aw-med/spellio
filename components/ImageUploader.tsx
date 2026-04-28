@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from './Button';
 import { getDictationByCode } from '../services/storageService';
 import { compressImage } from '../utils/imageUtils';
 import { Child, DictationResult } from '../types';
-import { getChildResults } from '../services/childService';
+import { getChildResults, getChildByPin } from '../services/childService';
 
 interface ImageUploaderProps {
   onImageSelected: (base64: string, mimeType: string) => void;
   onCodeValidated: (words: string[]) => void;
   isProcessing: boolean;
   activeChild?: Child | null;
+  onChildLogin?: (child: Child) => void;
 }
 
-export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, activeChild }: ImageUploaderProps) => {
+export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, activeChild, onChildLogin }: ImageUploaderProps) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [code, setCode] = useState('');
@@ -22,6 +23,9 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<DictationResult[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [isCheckingPin, setIsCheckingPin] = useState(false);
 
   const processFile = async (file: File) => {
     setFileError('');
@@ -61,6 +65,24 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
       setCodeError("Erreur de connexion. Réessaie.");
     } finally {
       setIsCheckingCode(false);
+    }
+  };
+
+  const handlePinSubmit = async () => {
+    if (pin.length !== 4 || !onChildLogin) return;
+    setPinError('');
+    setIsCheckingPin(true);
+    try {
+      const child = await getChildByPin(pin);
+      if (child) {
+        onChildLogin(child);
+      } else {
+        setPinError('Code inconnu. Vérifie avec tes parents.');
+      }
+    } catch {
+      setPinError('Erreur de connexion.');
+    } finally {
+      setIsCheckingPin(false);
     }
   };
 
@@ -168,6 +190,52 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
         </label>
         {fileError && <p className="text-red-500 text-sm mt-2 text-center font-medium">{fileError}</p>}
       </div>
+
+      {/* Code élève (PIN) — visible uniquement si pas déjà connecté via parent */}
+      {!activeChild && onChildLogin && (
+        <div className="w-full">
+          <div className="relative w-full flex items-center justify-center mb-6">
+            <div className="border-t border-slate-200 w-full absolute" />
+            <span className="bg-[#F5F0FA] px-4 py-1 rounded-full text-slate-400 font-semibold relative z-10 text-sm">MON COMPTE</span>
+          </div>
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={pin}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                setPin(v);
+                setPinError('');
+              }}
+              placeholder="Code élève (4 chiffres)"
+              className="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:outline-none text-center tracking-[0.3em] font-bold text-lg"
+              maxLength={4}
+              onKeyDown={(e) => e.key === 'Enter' && pin.length === 4 && handlePinSubmit()}
+            />
+            <Button
+              onClick={handlePinSubmit}
+              disabled={pin.length !== 4 || isCheckingPin}
+              isLoading={isCheckingPin}
+            >
+              Go
+            </Button>
+          </div>
+          {pinError && <p className="text-red-500 text-sm mt-2 text-center font-medium">{pinError}</p>}
+        </div>
+      )}
+
+      {/* Badge enfant connecté */}
+      {activeChild && (
+        <div className="w-full bg-white rounded-2xl border border-pink-100 p-4 flex items-center gap-3 animate-fade-in">
+          <span className="text-3xl">{activeChild.avatar}</span>
+          <div className="flex-1">
+            <p className="font-bold text-slate-800">{activeChild.first_name}</p>
+            <p className="text-xs text-slate-400">{activeChild.school_level} · Les résultats seront sauvegardés</p>
+          </div>
+        </div>
+      )}
 
       {/* Historique de l'enfant */}
       {activeChild && (

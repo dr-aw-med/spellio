@@ -132,6 +132,11 @@ export const ChildSelect = ({ onSelectChild, onViewProgress, parentName }: Child
               <span className="text-xs font-semibold text-slate-500 mt-1.5 bg-white/70 px-3 py-1 rounded-full">
                 {child.school_level}
               </span>
+              {child.pin && (
+                <span className="text-[10px] font-mono text-slate-400 mt-1.5">
+                  Code : {child.pin}
+                </span>
+              )}
             </button>
           );
         })}

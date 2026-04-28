@@ -17,6 +17,19 @@ export async function getChildren(): Promise<Child[]> {
 
 const VALID_AVATARS = ['🦊', '🐱', '🐶', '🦁', '🐼', '🦄', '🐸', '🐰', '🐻', '🦋', '🐧', '🐲'];
 
+async function generateUniquePin(): Promise<string> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const pin = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    const { data } = await supabase
+      .from('children')
+      .select('id')
+      .eq('pin', pin)
+      .maybeSingle();
+    if (!data) return pin;
+  }
+  throw new Error('Impossible de générer un code unique');
+}
+
 export async function createChild(
   firstName: string,
   avatar: string,
@@ -26,19 +39,33 @@ export async function createChild(
   if (!user) throw new Error('Non authentifié');
 
   const safeAvatar = VALID_AVATARS.includes(avatar) ? avatar : '🦊';
+  const pin = await generateUniquePin();
 
   const { data, error } = await supabase
     .from('children')
     .insert({
       parent_id: user.id,
       first_name: firstName,
-      avatar,
+      avatar: safeAvatar,
       school_level: schoolLevel,
+      pin,
     })
     .select()
     .single();
 
   if (error) throw new Error('Impossible de créer le profil');
+  return data as Child;
+}
+
+export async function getChildByPin(pin: string): Promise<Child | null> {
+  const { data, error } = await supabase
+    .from('children')
+    .select('*')
+    .eq('pin', pin)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (error || !data) return null;
   return data as Child;
 }
 

@@ -35,6 +35,7 @@ export interface Child {
   first_name: string;
   avatar: string;
   school_level: string;
+  pin?: string;
   created_at: string;
   updated_at: string;
 }
