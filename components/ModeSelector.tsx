@@ -7,41 +7,49 @@ interface ModeSelectorProps {
 }
 
 export const ModeSelector = ({ onSelect, userRole, onSignupPrompt }: ModeSelectorProps) => {
-  // TODO: server-side check when Stripe
   const isStoryLocked = userRole === 'STUDENT';
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 flex flex-col gap-6 animate-fade-in h-[80vh] justify-center">
-      <h2 className="text-2xl font-bold text-center text-slate-800 mb-4">On s'entraîne comment ?</h2>
+    <div className="w-full max-w-md mx-auto p-6 flex flex-col gap-6 h-[80vh] justify-center">
+      <div className="text-center mb-2 animate-fade-in">
+        <h2 className="text-2xl font-bold text-slate-800">On s'entraîne comment ?</h2>
+        <p className="text-slate-400 mt-1">Choisis ton mode de dictée</p>
+      </div>
 
       <button
         onClick={() => onSelect(AppStep.DICTATION_WORD)}
-        className="group relative bg-white hover:bg-indigo-50 border-2 border-slate-200 hover:border-indigo-400 rounded-3xl p-8 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-xl text-left"
+        className="animate-fade-in-up group relative bg-gradient-to-br from-sky-50 to-blue-50 border-2 border-sky-200 hover:border-sky-400 rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg text-left"
+        style={{ animationDelay: '100ms' }}
       >
-        <div className="absolute top-4 right-4 text-4xl group-hover:scale-110 transition-transform">🐢</div>
-        <h3 className="text-xl font-bold text-indigo-900 mb-2">Mot à mot</h3>
-        <p className="text-slate-500">Je te dicte les mots un par un. On prend notre temps.</p>
+        <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-md shadow-sky-200 group-hover:scale-110 transition-transform">
+          <span className="text-2xl">🐢</span>
+        </div>
+        <h3 className="text-xl font-bold text-sky-800 mb-2">Mot à mot</h3>
+        <p className="text-slate-500 text-sm leading-relaxed">Je te dicte les mots un par un. On prend notre temps.</p>
       </button>
 
       <button
         onClick={() => isStoryLocked ? onSignupPrompt() : onSelect(AppStep.DICTATION_STORY)}
-        className={`group relative rounded-3xl p-8 transition-all duration-300 transform hover:scale-105 shadow-lg text-left ${
+        className={`animate-fade-in-up group relative rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1 text-left ${
           isStoryLocked
-            ? 'bg-slate-100 hover:bg-slate-200 border-2 border-slate-200'
-            : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-300'
+            ? 'bg-slate-50 border-2 border-slate-200 hover:border-slate-300'
+            : 'bg-gradient-to-br from-violet-500 to-purple-600 border-2 border-violet-400 hover:shadow-xl shadow-lg shadow-violet-200'
         }`}
+        style={{ animationDelay: '220ms' }}
       >
-        <div className="absolute top-4 right-4 text-4xl group-hover:scale-110 transition-transform">
-          {isStoryLocked ? '🔒' : '📚'}
+        <div className={`absolute top-4 right-4 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform ${
+          isStoryLocked ? 'bg-slate-200' : 'bg-white/20'
+        }`}>
+          <span className="text-2xl">{isStoryLocked ? '🔒' : '📚'}</span>
         </div>
-        <h3 className={`text-xl font-bold mb-2 ${isStoryLocked ? 'text-slate-600' : 'text-white'}`}>
+        <h3 className={`text-xl font-bold mb-2 ${isStoryLocked ? 'text-slate-500' : 'text-white'}`}>
           Histoire magique
         </h3>
-        <p className={isStoryLocked ? 'text-slate-400' : 'text-indigo-100'}>
+        <p className={`text-sm leading-relaxed ${isStoryLocked ? 'text-slate-400' : 'text-violet-100'}`}>
           J'invente une histoire avec tes mots pour une vraie dictée !
         </p>
         {isStoryLocked && (
-          <span className="inline-block mt-3 text-xs font-bold bg-pink-100 text-pink-600 px-3 py-1 rounded-full">
+          <span className="inline-block mt-3 text-xs font-bold bg-pink-100 text-pink-600 px-3 py-1.5 rounded-full">
             Gratuit avec un compte
           </span>
         )}

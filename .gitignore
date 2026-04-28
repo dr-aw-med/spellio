@@ -13,5 +13,9 @@ dist/
 # Build
 *.tsbuildinfo
 
+# Capacitor (assets copiés par cap sync)
+ios/App/App/public/
+android/app/src/main/assets/public/
+
 # Husky
 .husky/_

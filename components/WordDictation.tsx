@@ -11,6 +11,15 @@ interface WordDictationProps {
   onBack: () => void;
 }
 
+const ENCOURAGEMENTS = [
+  'Continue comme ça !',
+  'Super !',
+  'Tu assures !',
+  'Bravo, on continue !',
+  'Encore un effort !',
+  'Tu es en forme !',
+];
+
 export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -23,10 +32,10 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
   const isMountedRef = useRef(true);
 
   const currentWord = words[currentIndex];
+  const progress = Math.round(((currentIndex + 1) / words.length) * 100);
 
   useEffect(() => {
     isMountedRef.current = true;
-    // Prefetch les premiers mots
     words.slice(0, 3).forEach(w => prefetchAudio(`${w}. . . Encore une fois : ${w}`));
     return () => {
       isMountedRef.current = false;
@@ -38,13 +47,11 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
     setIsRevealed(false);
     setHasListened(false);
 
-    // Prefetch le mot suivant
     if (currentIndex < words.length - 1) {
       const next = words[currentIndex + 1];
       prefetchAudio(`${next}. . . Encore une fois : ${next}`);
     }
 
-    // Auto-play apres un court delai
     const timer = setTimeout(() => {
       if (isMountedRef.current) playWord(words[currentIndex]);
     }, 500);
@@ -102,11 +109,22 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
     if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
   };
 
+  const encouragement = ENCOURAGEMENTS[currentIndex % ENCOURAGEMENTS.length];
+
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] max-w-md mx-auto p-4">
       <ProgressBar current={currentIndex + 1} total={words.length} label="Mot" />
 
       <SpeedControl value={playbackRate} onChange={setPlaybackRate} />
+
+      {/* Encouragement contextuel */}
+      {currentIndex > 0 && currentIndex % 3 === 0 && (
+        <div className="text-center mb-2 animate-fade-in">
+          <span className="text-sm font-semibold text-indigo-500 bg-indigo-50 px-4 py-1.5 rounded-full">
+            {encouragement}
+          </span>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col items-center justify-center gap-8">
         <AudioPlayButton isPlaying={isPlaying} onClick={togglePlay} disabled={isLoading}>
@@ -121,11 +139,25 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
           )}
         </AudioPlayButton>
 
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-1">
           <p className="text-slate-400 font-medium animate-fade-in">
             {isLoading ? "Chargement..." : isPlaying ? "J'écoute..." : hasListened ? "Réécouter" : "Appuie pour écouter"}
           </p>
-
+          {/* Mini dots progression */}
+          <div className="flex gap-1.5 mt-3">
+            {words.map((_, i) => (
+              <div
+                key={i}
+                className={`rounded-full transition-all duration-300 ${
+                  i === currentIndex
+                    ? 'w-6 h-2.5 bg-gradient-to-r from-indigo-500 to-pink-500'
+                    : i < currentIndex
+                    ? 'w-2.5 h-2.5 bg-indigo-300'
+                    : 'w-2.5 h-2.5 bg-slate-200'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -141,7 +173,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
       </div>
 
       <div className="mt-4 text-center">
-        <button onClick={onBack} className="text-sm text-slate-400 underline hover:text-indigo-500 transition-colors">
+        <button onClick={onBack} className="text-sm text-slate-400 hover:text-indigo-500 transition-colors">
           Retour au choix
         </button>
       </div>

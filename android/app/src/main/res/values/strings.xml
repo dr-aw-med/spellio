@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Spellio</string>
+    <string name="title_activity_main">Spellio</string>
+    <string name="package_name">io.spellio.app</string>
+    <string name="custom_url_scheme">io.spellio.app</string>
+</resources>

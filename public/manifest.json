@@ -4,7 +4,7 @@
   "description": "La dictee magique pour les enfants",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F8FAFC",
+  "background_color": "#EEF2FF",
   "theme_color": "#4F46E5",
   "orientation": "portrait",
   "icons": [

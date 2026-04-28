@@ -6,9 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:sync": "vite build && cap sync",
+    "cap:ios": "vite build && cap sync ios && cap open ios",
+    "cap:android": "vite build && cap sync android && cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/ios": "^8.3.1",
     "@google/genai": "^1.30.0",
     "@supabase/supabase-js": "^2.87.1",
     "@tailwindcss/vite": "^4.2.4",
@@ -17,9 +23,11 @@
     "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.1",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
+    "playwright": "^1.59.1",
     "vite": "^6.2.0"
   }
 }

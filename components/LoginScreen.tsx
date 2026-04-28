@@ -44,7 +44,6 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
         await signUp(email, password, role, role === 'PARENT' ? firstName : undefined);
         onSelectRole(role, role === 'PARENT' ? firstName : undefined);
       } else {
-        // A la connexion, le rôle vient des métadonnées du compte
         const user = await signIn(email, password);
         if (!user.role) throw new Error('Compte sans rôle. Contactez le support.');
         const role = user.role;
@@ -103,10 +102,10 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
 
           <div className="text-center mb-8">
             <div className="text-5xl mb-3">{authIntent === 'PARENT' ? '👨‍👩‍👧‍👦' : '🧑‍🏫'}</div>
-            <h2 className="text-2xl font-bold text-slate-800">
+            <h2 className="text-2xl font-bold text-indigo-700">
               {isSignUp ? 'Créer un compte' : 'Se connecter'}
             </h2>
-            <p className="text-slate-500 mt-1">
+            <p className="text-indigo-400 mt-1 font-medium">
               {authIntent === 'PARENT' ? 'Espace parent' : 'Espace enseignant'}
             </p>
           </div>
@@ -114,12 +113,12 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
           <form onSubmit={handleAuth} className="space-y-4">
             {isParentSignUp && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Prénom</label>
+                <label className="block text-sm font-semibold text-indigo-400 mb-1.5">Prénom</label>
                 <input
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full p-3 bg-white border border-indigo-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-300 focus:outline-none transition-colors"
                   placeholder="Ton prénom"
                   autoComplete="given-name"
                 />
@@ -127,24 +126,24 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <label className="block text-sm font-semibold text-indigo-400 mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full p-3 bg-white border border-indigo-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-300 focus:outline-none transition-colors"
                 placeholder={authIntent === 'PARENT' ? 'parent@email.fr' : 'enseignant@école.fr'}
                 autoComplete="email"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
+              <label className="block text-sm font-semibold text-indigo-400 mb-1.5">Mot de passe</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full p-3 bg-white border border-indigo-100 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-300 focus:outline-none transition-colors"
                 placeholder={isSignUp ? '6 caractères minimum' : '••••••'}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
               />
@@ -191,8 +190,9 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in p-6">
-      <h2 className="text-3xl font-bold text-slate-800 mb-2 text-center">Qui es-tu ?</h2>
-      <p className="text-slate-500 text-center mb-10">Bienvenue sur Spellio !</p>
+      <div className="text-5xl mb-3 animate-wiggle">👋</div>
+      <h2 className="text-3xl font-bold text-indigo-600 mb-2 text-center">Qui es-tu ?</h2>
+      <p className="text-slate-400 text-center mb-10">Choisis pour commencer !</p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
         <button

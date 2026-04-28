@@ -2,15 +2,25 @@
 
 @theme {
   --font-fredoka: 'Fredoka', sans-serif;
-  --color-dictale-indigo: #4F46E5;
-  --color-dictale-pink: #EC4899;
+  --color-spellio-indigo: #4F46E5;
+  --color-spellio-violet: #7C3AED;
+  --color-spellio-pink: #EC4899;
+  --color-spellio-amber: #F59E0B;
+  --color-spellio-sky: #38BDF8;
+  --color-spellio-emerald: #10B981;
 }
 
 body {
   font-family: var(--font-fredoka);
 }
 
-/* Animation pour les barres audio (Equalizer) */
+/* Fond d'app avec texture subtile */
+.app-bg {
+  background: linear-gradient(135deg, #EEF2FF 0%, #FDF2F8 50%, #FFFBEB 100%);
+  min-height: 100vh;
+}
+
+/* Animation equalizer audio */
 @keyframes audio-wave {
   0%, 100% { height: 20%; opacity: 0.7; }
   50% { height: 90%; opacity: 1; }
@@ -20,6 +30,7 @@ body {
   animation: audio-wave 1s ease-in-out infinite;
 }
 
+/* Fade in */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -27,6 +38,28 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in staggered — utilisé avec des delay inline */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Scale in pour les cartes */
+.animate-scale-in {
+  animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Celebration confetti */
@@ -39,7 +72,7 @@ body {
   animation: confetti-fall 2s ease-in forwards;
 }
 
-/* Wiggle animation pour les emojis */
+/* Wiggle pour les emojis */
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }
   25% { transform: rotate(-8deg); }
@@ -48,4 +81,59 @@ body {
 
 .animate-wiggle {
   animation: wiggle 2s ease-in-out infinite;
+}
+
+/* Float doux pour les emojis décoratifs */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Pulse doux pour les cartes actives */
+@keyframes soft-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2); }
+  50% { box-shadow: 0 0 0 12px rgba(99, 102, 241, 0); }
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 2s ease-in-out infinite;
+}
+
+/* Celebration bounce */
+@keyframes celebrate-bounce {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.15) rotate(-3deg); }
+  50% { transform: scale(1.25); }
+  75% { transform: scale(1.15) rotate(3deg); }
+}
+
+.animate-celebrate {
+  animation: celebrate-bounce 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Score count-up */
+@keyframes score-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-score-pop {
+  animation: score-pop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Shimmer pour les loading states */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.5) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

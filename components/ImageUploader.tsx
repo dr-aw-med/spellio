@@ -82,7 +82,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing }
 
       <div className="relative w-full flex items-center justify-center">
         <div className="border-t border-slate-200 w-full absolute" />
-        <span className="bg-slate-50 px-3 text-slate-400 font-medium relative z-10">OU</span>
+        <span className="bg-[#F5F0FA] px-4 py-1 rounded-full text-slate-400 font-semibold relative z-10 text-sm">OU</span>
       </div>
 
       {/* Option 2: Upload */}

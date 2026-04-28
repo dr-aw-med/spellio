@@ -27,6 +27,14 @@ const CONFETTI = [
   { emoji: '🎊', left: '35%', delay: '0.45s', duration: '2.1s' },
 ];
 
+function getScoreMessage(score: number, mistakes: number): { emoji: string; title: string; subtitle: string } {
+  if (mistakes === 0) return { emoji: '🏆', title: 'Parfait !', subtitle: 'Zéro faute, tu es un champion !' };
+  if (score >= 90) return { emoji: '🌟', title: 'Excellent !', subtitle: 'Presque parfait, bravo !' };
+  if (score >= 70) return { emoji: '💪', title: 'Bien joué !', subtitle: 'Continue comme ça !' };
+  if (score >= 50) return { emoji: '👍', title: 'Pas mal !', subtitle: 'Encore un peu d\'entraînement !' };
+  return { emoji: '🌱', title: 'Courage !', subtitle: 'C\'est en s\'entraînant qu\'on progresse !' };
+}
+
 export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild, dictationCode, dictationTitle, mode }: FinishScreenProps) => {
   const [showContent, setShowContent] = useState(false);
   const [showCorrection, setShowCorrection] = useState(false);
@@ -42,6 +50,7 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
 
   const totalWords = words.length;
   const score = mistakes !== null ? Math.round(((totalWords - mistakes) / totalWords) * 100) : null;
+  const scoreInfo = score !== null ? getScoreMessage(score, mistakes!) : null;
 
   const handleMistakesSubmit = async () => {
     const n = parseInt(mistakesInput);
@@ -49,7 +58,6 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
 
     setMistakes(n);
 
-    // Sauvegarde automatique si enfant actif
     if (activeChild) {
       try {
         await saveResult(
@@ -66,6 +74,13 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
       }
     }
   };
+
+  const scoreColor = score !== null
+    ? score >= 80 ? 'text-emerald-500' : score >= 50 ? 'text-amber-500' : 'text-rose-400'
+    : '';
+  const barColor = score !== null
+    ? score >= 80 ? 'from-emerald-400 to-emerald-500' : score >= 50 ? 'from-amber-400 to-amber-500' : 'from-rose-400 to-rose-500'
+    : '';
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[80vh] overflow-hidden">
@@ -89,34 +104,38 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
           showContent ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-8'
         }`}
       >
-        <div className="text-8xl mb-6 animate-bounce">🏆</div>
+        {/* Trophée ou emoji adapté au score */}
+        <div className="text-8xl mb-4 animate-celebrate">
+          {scoreInfo?.emoji || '🏆'}
+        </div>
 
-        <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-pink-500 to-amber-500 bg-clip-text text-transparent mb-4">
-          Bravo !
+        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 bg-clip-text text-transparent mb-2">
+          {scoreInfo?.title || 'Bravo !'}
         </h1>
 
-        <p className="text-xl text-slate-600 font-medium mb-2">
-          Tu as terminé ta dictée !
+        <p className="text-lg text-slate-500 font-medium mb-1">
+          {scoreInfo?.subtitle || 'Tu as terminé ta dictée !'}
         </p>
 
         <p className="text-slate-400 mb-6">
-          {totalWords} mots dictés 💪
+          {totalWords} mots dictés
         </p>
 
         {/* Auto-évaluation */}
         {mistakes === null ? (
-          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 animate-fade-in">
+          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm animate-fade-in">
             <p className="text-sm font-bold text-slate-700 mb-3">Combien de fautes as-tu fait ?</p>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <input
                 type="number"
                 min="0"
                 max={totalWords}
                 value={mistakesInput}
                 onChange={(e) => setMistakesInput(e.target.value)}
-                className="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-center text-lg font-bold"
+                className="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:outline-none text-center text-xl font-bold"
                 placeholder="0"
                 onKeyDown={(e) => e.key === 'Enter' && handleMistakesSubmit()}
+                autoFocus
               />
               <Button onClick={handleMistakesSubmit} disabled={!mistakesInput}>
                 OK
@@ -124,31 +143,27 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
             </div>
           </div>
         ) : (
-          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 animate-fade-in">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-slate-600">Ton score :</span>
-              <span className={`text-3xl font-extrabold ${
-                score! >= 80 ? 'text-green-500' : score! >= 50 ? 'text-amber-500' : 'text-red-400'
-              }`}>
+          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm animate-scale-in">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-bold text-slate-600">Ton score</span>
+              <span className={`text-4xl font-extrabold animate-score-pop ${scoreColor}`}>
                 {score}%
               </span>
             </div>
             <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-1000 ${
-                  score! >= 80 ? 'bg-green-500' : score! >= 50 ? 'bg-amber-500' : 'bg-red-400'
-                }`}
+                className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-1000`}
                 style={{ width: `${score}%` }}
               />
             </div>
-            <p className="text-sm text-slate-400 mt-2">
-              {mistakes === 0 ? 'Zéro faute ! Parfait ! 🌟' :
+            <p className="text-sm text-slate-400 mt-3">
+              {mistakes === 0 ? 'Zéro faute ! Tu es incroyable !' :
                mistakes === 1 ? '1 seule faute, c\'est presque parfait !' :
                `${mistakes} fautes sur ${totalWords} mots`}
             </p>
             {saved && (
-              <p className="text-xs text-green-600 font-medium mt-2 flex items-center justify-center gap-1 animate-fade-in">
-                Sauvegardé ✓
+              <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center justify-center gap-1 animate-fade-in">
+                Sauvegardé
               </p>
             )}
             {saveError && (
@@ -163,16 +178,16 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
         {!showCorrection ? (
           <button
             onClick={() => setShowCorrection(true)}
-            className="mb-6 px-6 py-3 rounded-2xl bg-green-50 border border-green-200 text-green-600 font-semibold hover:bg-green-100 transition-colors"
+            className="mb-6 px-6 py-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 font-semibold hover:bg-emerald-100 transition-all duration-200 hover:shadow-sm"
           >
             Voir la correction
           </button>
         ) : (
-          <div className="mb-6 w-full bg-green-50 rounded-2xl border border-green-100 p-5 animate-fade-in">
-            <p className="text-sm font-bold text-green-700 mb-3">Les mots :</p>
+          <div className="mb-6 w-full bg-emerald-50 rounded-2xl border border-emerald-100 p-5 animate-scale-in">
+            <p className="text-sm font-bold text-emerald-700 mb-3">Les mots :</p>
             <div className="flex flex-wrap gap-2">
               {words.map((word, i) => (
-                <span key={i} className="bg-white px-3 py-1 rounded-lg text-slate-700 font-medium text-sm border border-green-100">
+                <span key={i} className="bg-white px-3 py-1.5 rounded-xl text-slate-700 font-medium text-sm border border-emerald-100 shadow-sm">
                   {word}
                 </span>
               ))}
@@ -183,7 +198,7 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
         <div className="flex flex-col gap-3 w-full">
           <Button
             onClick={onRetry}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
+            className="w-full"
           >
             Recommencer
           </Button>
