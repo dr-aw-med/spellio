@@ -278,7 +278,7 @@ export const TeacherDashboard = () => {
               <input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 capture="environment"
                 onChange={handlePhoto}
                 disabled={isAnalyzing}

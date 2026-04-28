@@ -16,8 +16,14 @@ export const compressImage = async (
   maxSize = 1200,
   quality = 0.7
 ): Promise<CompressedImage> => {
-  // Validation du type
-  if (!file.type.startsWith('image/')) {
+  // Validation du type (accepter HEIC/HEIF des iPhones)
+  const validTypes = ['image/', 'application/octet-stream'];
+  const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif', '.bmp'];
+  const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+  const isValidType = validTypes.some(t => file.type.startsWith(t)) || file.type === '';
+  const isValidExt = validExtensions.includes(ext);
+
+  if (!isValidType && !isValidExt) {
     throw new Error('Le fichier sélectionné n\'est pas une image.');
   }
 

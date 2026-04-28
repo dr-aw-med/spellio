@@ -177,7 +177,7 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, 
             </div>
           )}
 
-          <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFileChange} disabled={isProcessing} />
+          <input type="file" className="hidden" accept="image/*,.heic,.heif" capture="environment" onChange={handleFileChange} disabled={isProcessing} />
 
           {isProcessing && (
             <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center backdrop-blur-sm z-10">
