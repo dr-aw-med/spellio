@@ -11,6 +11,7 @@ import { ChildSelect } from './components/ChildSelect';
 import { ParentDashboard } from './components/ParentDashboard';
 import { ResetPassword } from './components/ResetPassword';
 import { FinishScreen } from './components/FinishScreen';
+import { ChildProfile } from './components/ChildProfile';
 import { Modal } from './components/Modal';
 import { extractWordsFromImage } from './services/api';
 import { signOut } from './services/authService';
@@ -235,6 +236,7 @@ function App() {
             }}
             userRole={userRole}
             onSignupPrompt={handleSignupPrompt}
+            hasActiveChild={!!activeChild}
           />
         );
       case AppStep.DICTATION_WORD:
@@ -268,6 +270,13 @@ function App() {
             onNew={navigateToRoleHome}
           />
         );
+      case AppStep.CHILD_PROFILE:
+        return activeChild ? (
+          <ChildProfile
+            child={activeChild}
+            onBack={() => setStep(AppStep.UPLOAD)}
+          />
+        ) : null;
       default:
         return null;
     }
@@ -281,6 +290,7 @@ function App() {
         onLogoClick={handleLogout}
         userRole={userRole}
         activeChildName={activeChild ? `${activeChild.avatar} ${activeChild.first_name}` : undefined}
+        onChildProfile={activeChild ? () => setStep(AppStep.CHILD_PROFILE) : undefined}
         showHome={
           !(userRole === 'STUDENT' && step === AppStep.UPLOAD) &&
           !(userRole === 'TEACHER' && step === AppStep.TEACHER_DASHBOARD) &&

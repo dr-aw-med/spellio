@@ -4,10 +4,11 @@ interface ModeSelectorProps {
   onSelect: (step: AppStep) => void;
   userRole: UserRole;
   onSignupPrompt: () => void;
+  hasActiveChild?: boolean;
 }
 
-export const ModeSelector = ({ onSelect, userRole, onSignupPrompt }: ModeSelectorProps) => {
-  const isStoryLocked = userRole === 'STUDENT';
+export const ModeSelector = ({ onSelect, userRole, onSignupPrompt, hasActiveChild }: ModeSelectorProps) => {
+  const isStoryLocked = userRole === 'STUDENT' && !hasActiveChild;
 
   return (
     <div className="w-full max-w-md mx-auto p-6 flex flex-col gap-6 h-[80vh] justify-center">

@@ -7,9 +7,10 @@ interface HeaderProps {
   userRole: UserRole;
   showHome?: boolean;
   activeChildName?: string;
+  onChildProfile?: () => void;
 }
 
-export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = true, activeChildName }: HeaderProps) => {
+export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = true, activeChildName, onChildProfile }: HeaderProps) => {
   return (
     <header className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-lg border-b border-white/50 sticky top-0 z-10">
       <div
@@ -38,10 +39,14 @@ export const Header = ({ onLogout, onHome, onLogoClick, userRole, showHome = tru
 
       {userRole && (
         <div className="flex items-center gap-2">
-          {userRole === 'PARENT' && activeChildName && (
-            <span className="text-sm font-medium text-pink-600 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-100">
+          {activeChildName && (
+            <button
+              onClick={onChildProfile}
+              className="text-sm font-medium text-pink-600 bg-pink-50 px-3 py-1.5 rounded-full border border-pink-100 hover:bg-pink-100 transition-colors"
+              title="Mon profil"
+            >
               {activeChildName}
-            </span>
+            </button>
           )}
 
           {showHome && (

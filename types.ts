@@ -9,6 +9,7 @@ export enum AppStep {
   DICTATION_WORD = 'DICTATION_WORD',
   DICTATION_STORY = 'DICTATION_STORY',
   FINISHED = 'FINISHED',
+  CHILD_PROFILE = 'CHILD_PROFILE',
 }
 
 export interface WordListResponse {
