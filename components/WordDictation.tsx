@@ -7,7 +7,7 @@ import { speak, prefetchAudio } from '../services/ttsService';
 
 interface WordDictationProps {
   words: string[];
-  onFinish: () => void;
+  onFinish: (illustration?: string) => void;
   onBack: () => void;
 }
 

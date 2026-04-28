@@ -1,21 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { getDictationByCode } from '../services/storageService';
 import { compressImage } from '../utils/imageUtils';
+import { Child, DictationResult } from '../types';
+import { getChildResults } from '../services/childService';
 
 interface ImageUploaderProps {
   onImageSelected: (base64: string, mimeType: string) => void;
   onCodeValidated: (words: string[]) => void;
   isProcessing: boolean;
+  activeChild?: Child | null;
 }
 
-export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing }: ImageUploaderProps) => {
+export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing, activeChild }: ImageUploaderProps) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
   const [fileError, setFileError] = useState('');
   const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<DictationResult[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const processFile = async (file: File) => {
     setFileError('');
@@ -56,6 +62,46 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing }
     } finally {
       setIsCheckingCode(false);
     }
+  };
+
+  const handleToggleHistory = async () => {
+    if (showHistory) {
+      setShowHistory(false);
+      return;
+    }
+    if (!activeChild) return;
+
+    setShowHistory(true);
+    if (history.length === 0) {
+      setLoadingHistory(true);
+      try {
+        const results = await getChildResults(activeChild.id);
+        setHistory(results);
+      } catch {
+        // Silencieux
+      } finally {
+        setLoadingHistory(false);
+      }
+    }
+  };
+
+  const scoreColor = (score: number) => {
+    if (score >= 80) return 'text-emerald-600';
+    if (score >= 50) return 'text-amber-500';
+    return 'text-red-400';
+  };
+
+  const scoreBg = (score: number) => {
+    if (score >= 80) return 'bg-emerald-50';
+    if (score >= 50) return 'bg-amber-50';
+    return 'bg-red-50';
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+    });
   };
 
   return (
@@ -122,6 +168,56 @@ export const ImageUploader = ({ onImageSelected, onCodeValidated, isProcessing }
         </label>
         {fileError && <p className="text-red-500 text-sm mt-2 text-center font-medium">{fileError}</p>}
       </div>
+
+      {/* Historique de l'enfant */}
+      {activeChild && (
+        <div className="w-full">
+          <button
+            onClick={handleToggleHistory}
+            className="w-full text-sm font-medium text-indigo-500 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5"
+          >
+            <span>📊</span>
+            {showHistory ? 'Masquer l\'historique' : `Mes dictées`}
+          </button>
+
+          {showHistory && (
+            <div className="mt-4 bg-white rounded-2xl border border-slate-100 overflow-hidden animate-fade-in">
+              {loadingHistory ? (
+                <div className="p-6 text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-200 border-t-indigo-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400">Chargement...</p>
+                </div>
+              ) : history.length === 0 ? (
+                <div className="p-6 text-center">
+                  <div className="text-3xl mb-2">📝</div>
+                  <p className="text-sm text-slate-400">Pas encore de dictées !</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-50 max-h-64 overflow-y-auto">
+                  {history.map((result) => (
+                    <div
+                      key={result.id}
+                      className={`flex items-center justify-between p-3.5 ${scoreBg(result.score)}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-slate-700 truncate">
+                          {result.dictation_title || 'Dictée'}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {formatDate(result.completed_at)} · {result.mode === 'story' ? 'Histoire' : 'Mot à mot'} · {result.total_words} mots
+                        </p>
+                      </div>
+                      <div className={`text-lg font-extrabold ${scoreColor(result.score)} ml-3 shrink-0`}>
+                        {result.score}%
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

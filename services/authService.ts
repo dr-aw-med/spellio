@@ -47,10 +47,20 @@ export async function signIn(email: string, password: string): Promise<AuthUser>
   }
 
   const meta = data.user.user_metadata;
+  let role = meta?.role || null;
+
+  // Compte ancien sans rôle : on le corrige en PARENT par défaut
+  if (!role) {
+    role = 'PARENT';
+    await supabase.auth.updateUser({
+      data: { role, first_name: meta?.first_name || null },
+    });
+  }
+
   return {
     id: data.user.id,
     email: data.user.email!,
-    role: meta?.role || null,
+    role,
     firstName: meta?.first_name || null,
   };
 }

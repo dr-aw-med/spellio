@@ -12,6 +12,8 @@ interface FinishScreenProps {
   dictationCode?: string;
   dictationTitle?: string;
   mode?: 'word' | 'story';
+  illustration?: string | null;
+  storyFullText?: string | null;
 }
 
 const CONFETTI = [
@@ -35,13 +37,14 @@ function getScoreMessage(score: number, mistakes: number): { emoji: string; titl
   return { emoji: '🌱', title: 'Courage !', subtitle: 'C\'est en s\'entraînant qu\'on progresse !' };
 }
 
-export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild, dictationCode, dictationTitle, mode }: FinishScreenProps) => {
+export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild, dictationCode, dictationTitle, mode, illustration, storyFullText }: FinishScreenProps) => {
   const [showContent, setShowContent] = useState(false);
-  const [showCorrection, setShowCorrection] = useState(false);
-  const [mistakes, setMistakes] = useState<number | null>(null);
-  const [mistakesInput, setMistakesInput] = useState('');
+  const [errorWords, setErrorWords] = useState<Set<number>>(new Set());
+  const [bonusErrors, setBonusErrors] = useState(0);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [showStoryText, setShowStoryText] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 300);
@@ -49,14 +52,22 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
   }, []);
 
   const totalWords = words.length;
-  const score = mistakes !== null ? Math.round(((totalWords - mistakes) / totalWords) * 100) : null;
-  const scoreInfo = score !== null ? getScoreMessage(score, mistakes!) : null;
+  const totalMistakes = errorWords.size + bonusErrors;
+  const score = Math.max(0, Math.round(((totalWords - totalMistakes) / totalWords) * 100));
+  const scoreInfo = isConfirmed ? getScoreMessage(score, totalMistakes) : null;
 
-  const handleMistakesSubmit = async () => {
-    const n = parseInt(mistakesInput);
-    if (isNaN(n) || n < 0 || n > totalWords) return;
+  const toggleWordError = (index: number) => {
+    if (isConfirmed) return;
+    setErrorWords(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
 
-    setMistakes(n);
+  const handleConfirm = async () => {
+    setIsConfirmed(true);
 
     if (activeChild) {
       try {
@@ -66,7 +77,7 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
           dictationTitle || 'Dictée',
           mode || 'word',
           totalWords,
-          n
+          totalMistakes
         );
         setSaved(true);
       } catch {
@@ -75,10 +86,35 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
     }
   };
 
-  const scoreColor = score !== null
+  const handleSaveIllustration = async () => {
+    if (!illustration) return;
+    try {
+      const res = await fetch(illustration);
+      const blob = await res.blob();
+
+      if (navigator.share && navigator.canShare?.({ files: [new File([blob], 'spellio.png', { type: 'image/png' })] })) {
+        await navigator.share({
+          files: [new File([blob], 'spellio-illustration.png', { type: 'image/png' })],
+          title: 'Mon illustration Spellio',
+        });
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `spellio-${dictationTitle || 'illustration'}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // Annulé par l'utilisateur
+    }
+  };
+
+  const scoreColor = isConfirmed
     ? score >= 80 ? 'text-emerald-500' : score >= 50 ? 'text-amber-500' : 'text-rose-400'
     : '';
-  const barColor = score !== null
+  const barColor = isConfirmed
     ? score >= 80 ? 'from-emerald-400 to-emerald-500' : score >= 50 ? 'from-amber-400 to-amber-500' : 'from-rose-400 to-rose-500'
     : '';
 
@@ -86,7 +122,7 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
     <div className="relative flex flex-col items-center justify-center min-h-[80vh] overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 via-pink-50 to-amber-50 -z-10 rounded-3xl" />
 
-      {CONFETTI.map((c, i) => (
+      {isConfirmed && CONFETTI.map((c, i) => (
         <span
           key={i}
           className="absolute top-0 text-3xl pointer-events-none"
@@ -100,11 +136,10 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
       ))}
 
       <div
-        className={`flex flex-col items-center text-center px-6 w-full max-w-sm transition-all duration-700 ${
+        className={`flex flex-col items-center text-center px-6 w-full max-w-md transition-all duration-700 ${
           showContent ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-8'
         }`}
       >
-        {/* Trophée ou emoji adapté au score */}
         <div className="text-8xl mb-4 animate-celebrate">
           {scoreInfo?.emoji || '🏆'}
         </div>
@@ -121,26 +156,75 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
           {totalWords} mots dictés
         </p>
 
-        {/* Auto-évaluation */}
-        {mistakes === null ? (
-          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm animate-fade-in">
-            <p className="text-sm font-bold text-slate-700 mb-3">Combien de fautes as-tu fait ?</p>
-            <div className="flex gap-3">
-              <input
-                type="number"
-                min="0"
-                max={totalWords}
-                value={mistakesInput}
-                onChange={(e) => setMistakesInput(e.target.value)}
-                className="flex-1 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:outline-none text-center text-xl font-bold"
-                placeholder="0"
-                onKeyDown={(e) => e.key === 'Enter' && handleMistakesSubmit()}
-                autoFocus
-              />
-              <Button onClick={handleMistakesSubmit} disabled={!mistakesInput}>
-                OK
-              </Button>
+        {/* Illustration (mode histoire) */}
+        {illustration && (
+          <div className="w-full mb-6 animate-fade-in">
+            <div className="rounded-2xl overflow-hidden shadow-md mb-3">
+              <img src={illustration} alt="Illustration de l'histoire" className="w-full h-auto" />
             </div>
+            <button
+              onClick={handleSaveIllustration}
+              className="text-sm font-medium text-indigo-500 hover:text-indigo-700 transition-colors flex items-center gap-1.5 mx-auto"
+            >
+              <span>📸</span>
+              Enregistrer l'illustration
+            </button>
+          </div>
+        )}
+
+        {/* Sélection des mots avec erreurs */}
+        {!isConfirmed ? (
+          <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm animate-fade-in">
+            <p className="text-sm font-bold text-slate-700 mb-1">Touche les mots où tu as fait une faute :</p>
+            <p className="text-xs text-slate-400 mb-4">
+              {errorWords.size === 0 ? 'Aucun mot sélectionné' : `${errorWords.size} mot${errorWords.size > 1 ? 's' : ''} sélectionné${errorWords.size > 1 ? 's' : ''}`}
+            </p>
+            <div className="flex flex-wrap gap-2 mb-5">
+              {words.map((word, i) => {
+                const isError = errorWords.has(i);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => toggleWordError(i)}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium border-2 transition-all duration-200 active:scale-95 ${
+                      isError
+                        ? 'bg-red-50 border-red-300 text-red-600 line-through'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-300'
+                    }`}
+                  >
+                    {word}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Fautes bonus (grammaire, conjugaison...) */}
+            <div className="flex items-center justify-between bg-slate-50 rounded-xl p-3 mb-5">
+              <div className="text-left">
+                <p className="text-sm font-semibold text-slate-600">Autres fautes</p>
+                <p className="text-xs text-slate-400">Grammaire, conjugaison...</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setBonusErrors(prev => Math.max(0, prev - 1))}
+                  disabled={bonusErrors === 0}
+                  className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:border-indigo-300 disabled:opacity-30 transition-all"
+                >
+                  -
+                </button>
+                <span className="text-lg font-bold text-slate-700 w-6 text-center">{bonusErrors}</span>
+                <button
+                  onClick={() => setBonusErrors(prev => prev + 1)}
+                  className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:border-indigo-300 transition-all"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <Button onClick={handleConfirm} className="w-full">
+              {totalMistakes === 0 ? 'Zéro faute !' : `Valider (${totalMistakes} faute${totalMistakes > 1 ? 's' : ''})`}
+            </Button>
           </div>
         ) : (
           <div className="w-full bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm animate-scale-in">
@@ -156,10 +240,30 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
                 style={{ width: `${score}%` }}
               />
             </div>
+
+            {/* Mots avec erreurs marquées */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              {words.map((word, i) => {
+                const isError = errorWords.has(i);
+                return (
+                  <span
+                    key={i}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium border ${
+                      isError
+                        ? 'bg-red-50 border-red-200 text-red-500 line-through'
+                        : 'bg-emerald-50 border-emerald-100 text-emerald-700'
+                    }`}
+                  >
+                    {word}
+                  </span>
+                );
+              })}
+            </div>
+
             <p className="text-sm text-slate-400 mt-3">
-              {mistakes === 0 ? 'Zéro faute ! Tu es incroyable !' :
-               mistakes === 1 ? '1 seule faute, c\'est presque parfait !' :
-               `${mistakes} fautes sur ${totalWords} mots`}
+              {totalMistakes === 0 ? 'Zéro faute ! Tu es incroyable !' :
+               `${totalMistakes} faute${totalMistakes > 1 ? 's' : ''} sur ${totalWords} mots`}
+              {bonusErrors > 0 && ` (dont ${bonusErrors} de grammaire)`}
             </p>
             {saved && (
               <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center justify-center gap-1 animate-fade-in">
@@ -174,51 +278,48 @@ export const FinishScreen = ({ onRetry, onRetryChild, onNew, words, activeChild,
           </div>
         )}
 
-        {/* Correction */}
-        {!showCorrection ? (
-          <button
-            onClick={() => setShowCorrection(true)}
-            className="mb-6 px-6 py-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 font-semibold hover:bg-emerald-100 transition-all duration-200 hover:shadow-sm"
-          >
-            Voir la correction
-          </button>
-        ) : (
-          <div className="mb-6 w-full bg-emerald-50 rounded-2xl border border-emerald-100 p-5 animate-scale-in">
-            <p className="text-sm font-bold text-emerald-700 mb-3">Les mots :</p>
-            <div className="flex flex-wrap gap-2">
-              {words.map((word, i) => (
-                <span key={i} className="bg-white px-3 py-1.5 rounded-xl text-slate-700 font-medium text-sm border border-emerald-100 shadow-sm">
-                  {word}
-                </span>
-              ))}
-            </div>
-          </div>
+        {/* Texte complet de la dictée (mode histoire) */}
+        {isConfirmed && storyFullText && (
+          <>
+            {!showStoryText ? (
+              <button
+                onClick={() => setShowStoryText(true)}
+                className="mb-6 px-6 py-3 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 font-semibold hover:bg-indigo-100 transition-all duration-200 hover:shadow-sm"
+              >
+                Voir le texte de la dictée
+              </button>
+            ) : (
+              <div className="mb-6 w-full bg-white rounded-2xl border border-indigo-100 p-5 animate-scale-in text-left">
+                <div className="flex justify-between items-center mb-3">
+                  <p className="text-sm font-bold text-indigo-600">Le texte complet :</p>
+                  <button
+                    onClick={() => setShowStoryText(false)}
+                    className="text-xs text-slate-400 hover:text-slate-600"
+                  >
+                    Masquer
+                  </button>
+                </div>
+                <p className="text-slate-700 leading-relaxed text-[15px]">{storyFullText}</p>
+              </div>
+            )}
+          </>
         )}
 
-        <div className="flex flex-col gap-3 w-full">
-          <Button
-            onClick={onRetry}
-            className="w-full"
-          >
-            Recommencer
-          </Button>
-          {activeChild && onRetryChild && (
-            <Button
-              variant="secondary"
-              onClick={onRetryChild}
-              className="w-full"
-            >
-              Encore une dictée pour {activeChild.first_name}
+        {isConfirmed && (
+          <div className="flex flex-col gap-3 w-full animate-fade-in">
+            <Button onClick={onRetry} className="w-full">
+              Recommencer
             </Button>
-          )}
-          <Button
-            variant="secondary"
-            onClick={onNew}
-            className="w-full"
-          >
-            Nouvelle dictée
-          </Button>
-        </div>
+            {activeChild && onRetryChild && (
+              <Button variant="secondary" onClick={onRetryChild} className="w-full">
+                Encore une dictée pour {activeChild.first_name}
+              </Button>
+            )}
+            <Button variant="secondary" onClick={onNew} className="w-full">
+              Nouvelle dictée
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

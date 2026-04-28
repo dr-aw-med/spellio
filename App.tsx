@@ -39,6 +39,8 @@ function App() {
   const [activeChild, setActiveChild] = useState<Child | null>(null);
   const [parentName, setParentName] = useState<string | null>(null);
   const [dictationMeta, setDictationMeta] = useState<DictationMeta | null>(null);
+  const [storyIllustration, setStoryIllustration] = useState<string | null>(null);
+  const [storyText, setStoryText] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({
     isOpen: false,
     title: '',
@@ -66,6 +68,8 @@ function App() {
   const navigateToRoleHome = () => {
     setWords([]);
     setDictationMeta(null);
+    setStoryIllustration(null);
+    setStoryText(null);
     if (userRole === 'TEACHER') {
       setStep(AppStep.TEACHER_DASHBOARD);
     } else if (userRole === 'PARENT') {
@@ -162,7 +166,9 @@ function App() {
     setStep(AppStep.CHOOSE_MODE);
   };
 
-  const handleDictationFinish = () => {
+  const handleDictationFinish = (illustration?: string, fullText?: string) => {
+    if (illustration) setStoryIllustration(illustration);
+    if (fullText) setStoryText(fullText);
     setStep(AppStep.FINISHED);
   };
 
@@ -207,6 +213,7 @@ function App() {
             onImageSelected={handleImageSelected}
             onCodeValidated={handleCodeValidated}
             isProcessing={isProcessing}
+            activeChild={activeChild}
           />
         );
       case AppStep.VERIFY:
@@ -253,6 +260,8 @@ function App() {
             dictationCode={dictationMeta?.code}
             dictationTitle={dictationMeta?.title}
             mode={dictationMeta?.mode}
+            illustration={storyIllustration}
+            storyFullText={storyText}
             onRetry={() => setStep(AppStep.CHOOSE_MODE)}
             onRetryChild={() => setStep(AppStep.UPLOAD)}
             onNew={navigateToRoleHome}

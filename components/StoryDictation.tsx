@@ -9,7 +9,7 @@ import { StoryResponse } from '../types';
 
 interface StoryDictationProps {
   words: string[];
-  onFinish: () => void;
+  onFinish: (illustration?: string, fullText?: string) => void;
   onBack: () => void;
 }
 
@@ -127,7 +127,7 @@ export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps)
     if (currentSentenceIndex < sentences.length - 1) {
       setCurrentSentenceIndex(prev => prev + 1);
     } else {
-      onFinish();
+      onFinish(generatedImage || undefined, storyData?.story);
     }
   };
 
