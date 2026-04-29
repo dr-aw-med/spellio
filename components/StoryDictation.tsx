@@ -22,7 +22,7 @@ export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps)
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [playbackRate, setPlaybackRate] = useState(0.8);
   const [dictationDone, setDictationDone] = useState(false);
 
   const [mode, setMode] = useState<'PREVIEW' | 'DICTATION'>('PREVIEW');

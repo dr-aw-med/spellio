@@ -4,8 +4,9 @@ interface SpeedControlProps {
 }
 
 const speeds = [
-  { value: 0.85, label: 'Lent' },
-  { value: 1.0, label: 'Normal' },
+  { value: 0.65, label: 'Lent' },
+  { value: 0.8, label: 'Normal' },
+  { value: 1.0, label: 'Rapide' },
 ];
 
 export const SpeedControl = ({ value, onChange }: SpeedControlProps) => {

@@ -26,7 +26,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
   const [isLoading, setIsLoading] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [hasListened, setHasListened] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [playbackRate, setPlaybackRate] = useState(0.8);
 
   const stopAudioRef = useRef<() => void>(() => {});
   const isMountedRef = useRef(true);
