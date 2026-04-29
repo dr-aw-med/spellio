@@ -226,7 +226,21 @@ export const LoginScreen = ({ onSelectRole }: LoginScreenProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in p-4 sm:p-6">
-      <h2 className="text-2xl sm:text-3xl font-bold text-indigo-600 mb-1 text-center">Qui es-tu ?</h2>
+      {/* Logo */}
+      <div className="w-16 h-16 sm:w-20 sm:h-20 mb-4">
+        <svg viewBox="0 0 40 40" className="w-full h-full">
+          <defs>
+            <linearGradient id="heroLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#4F46E5" />
+              <stop offset="50%" stopColor="#7C3AED" />
+              <stop offset="100%" stopColor="#EC4899" />
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#heroLogoGrad)" />
+          <text x="20" y="27" textAnchor="middle" fontSize="22" fontWeight="bold" fill="white" fontFamily="Fredoka, sans-serif">S</text>
+        </svg>
+      </div>
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-1 text-center">Qui es-tu ?</h2>
       <p className="text-slate-400 text-center mb-6 sm:mb-10 text-sm">Choisis pour commencer !</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 w-full max-w-3xl">
