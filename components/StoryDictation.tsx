@@ -6,6 +6,7 @@ import { ProgressBar } from './ProgressBar';
 import { generateStoryFromWords, generateStoryIllustration } from '../services/api';
 import { speak, prefetchAudio } from '../services/ttsService';
 import { StoryResponse } from '../types';
+import { addSpokenPunctuation } from '../utils/dictationUtils';
 
 interface StoryDictationProps {
   words: string[];
@@ -82,7 +83,9 @@ export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps)
 
   const playText = async (text: string, isDictation = false) => {
     handleStop();
-    const textToRead = isDictation ? `${text}. . . . Je répète : ${text}` : text;
+    const textToRead = isDictation
+      ? `${addSpokenPunctuation(text)}. . . . Je répète : ${addSpokenPunctuation(text)}`
+      : text;
     setIsLoading(true);
 
     const stop = await speak(textToRead, {
