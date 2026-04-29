@@ -167,7 +167,7 @@ function App() {
     } catch {
       showModal(
         'Oups !',
-        'Je n\'ai pas réussi à lire l\'image. Essaie avec une photo plus claire.',
+        'Le service est momentanément indisponible. Réessaie dans quelques instants.',
         'warning'
       );
     } finally {
