@@ -151,20 +151,20 @@ serve(async (req) => {
 
     const safeText = text.slice(0, 5000);
 
-    // 1. Essayer Gemini TTS
-    const geminiAudio = await tryGeminiTts(safeText);
-    if (geminiAudio) {
-      return new Response(
-        JSON.stringify({ audio: geminiAudio, mimeType: 'audio/wav', provider: 'gemini' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 2. Fallback ElevenLabs
+    // 1. Essayer ElevenLabs (stable)
     const elevenAudio = await tryElevenLabsTts(safeText);
     if (elevenAudio) {
       return new Response(
         JSON.stringify({ audio: elevenAudio, mimeType: 'audio/mpeg', provider: 'elevenlabs' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 2. Fallback Gemini TTS (expérimental)
+    const geminiAudio = await tryGeminiTts(safeText);
+    if (geminiAudio) {
+      return new Response(
+        JSON.stringify({ audio: geminiAudio, mimeType: 'audio/wav', provider: 'gemini' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
