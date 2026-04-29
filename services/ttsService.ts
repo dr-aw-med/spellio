@@ -116,14 +116,15 @@ function playPcmBase64(
     bytes[i] = binary.charCodeAt(i);
   }
 
-  // Convertir Int16 PCM en Float32 pour AudioBuffer
-  const int16 = new Int16Array(bytes.buffer);
+  // Convertir Int16 PCM big-endian en Float32 pour AudioBuffer
+  const view = new DataView(bytes.buffer);
+  const numSamples = Math.floor(bytes.length / 2);
   const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const ctx = new AudioCtx();
-  const audioBuffer = ctx.createBuffer(1, int16.length, 24000);
+  const audioBuffer = ctx.createBuffer(1, numSamples, 24000);
   const channelData = audioBuffer.getChannelData(0);
-  for (let i = 0; i < int16.length; i++) {
-    channelData[i] = int16[i] / 32768;
+  for (let i = 0; i < numSamples; i++) {
+    channelData[i] = view.getInt16(i * 2, true) / 32768;
   }
 
   source = ctx.createBufferSource();
