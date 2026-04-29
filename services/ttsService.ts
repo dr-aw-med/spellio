@@ -1,15 +1,15 @@
 /**
- * Service TTS — ElevenLabs via Edge Function + fallback Web Speech API
+ * Service TTS — Gemini / ElevenLabs via Edge Function + fallback Web Speech API
  */
 
 import { speakWithBrowser } from '../utils/audioUtils';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-// Cache en mémoire : text -> base64 audio
-const audioCache = new Map<string, string>();
+// Cache en mémoire : text -> { audio, mimeType }
+const audioCache = new Map<string, { audio: string; mimeType: string }>();
 
-async function fetchTts(text: string): Promise<string | null> {
+async function fetchTts(text: string): Promise<{ audio: string; mimeType: string } | null> {
   if (!API_BASE) return null;
 
   try {
@@ -29,28 +29,22 @@ async function fetchTts(text: string): Promise<string | null> {
     const data = await res.json();
     if (data.fallback || !data.audio) return null;
 
-    return data.audio;
+    return { audio: data.audio, mimeType: data.mimeType || 'audio/mpeg' };
   } catch {
     return null;
   }
 }
 
-/**
- * Pré-charge l'audio d'un texte dans le cache
- */
 export function prefetchAudio(text: string): void {
   if (!API_BASE) return;
   const key = text.trim();
   if (audioCache.has(key)) return;
 
-  fetchTts(text).then(audio => {
-    if (audio) audioCache.set(key, audio);
+  fetchTts(text).then(result => {
+    if (result) audioCache.set(key, result);
   });
 }
 
-/**
- * Joue un texte — ElevenLabs si dispo, sinon Web Speech API
- */
 export async function speak(
   text: string,
   options: { rate?: number; onEnd?: () => void } = {}
@@ -58,9 +52,10 @@ export async function speak(
   const { rate = 1.0, onEnd } = options;
   const key = text.trim();
 
-  // 1. Déjà en cache → jouer direct
+  // 1. Déjà en cache
   if (audioCache.has(key)) {
-    return playMp3Base64(audioCache.get(key)!, rate, onEnd);
+    const cached = audioCache.get(key)!;
+    return playAudioBase64(cached.audio, cached.mimeType, rate, onEnd);
   }
 
   // 2. Pas d'API → Web Speech direct
@@ -68,11 +63,11 @@ export async function speak(
     return speakWithBrowser(text, { rate, onEnd });
   }
 
-  // 3. Tenter ElevenLabs
-  const audio = await fetchTts(text);
-  if (audio) {
-    audioCache.set(key, audio);
-    return playMp3Base64(audio, rate, onEnd);
+  // 3. Tenter l'API
+  const result = await fetchTts(text);
+  if (result) {
+    audioCache.set(key, result);
+    return playAudioBase64(result.audio, result.mimeType, rate, onEnd);
   }
 
   // 4. Fallback
@@ -80,9 +75,71 @@ export async function speak(
 }
 
 /**
- * Joue un MP3 base64 via AudioContext
+ * Joue un audio base64 — gère MP3 (ElevenLabs) et PCM brut (Gemini)
  */
-function playMp3Base64(
+function playAudioBase64(
+  base64: string,
+  mimeType: string,
+  rate: number,
+  onEnd?: () => void
+): () => void {
+  if (mimeType === 'audio/pcm') {
+    return playPcmBase64(base64, rate, onEnd);
+  }
+  return playEncodedBase64(base64, rate, onEnd);
+}
+
+/**
+ * Joue du PCM brut 16-bit 24kHz mono (Gemini TTS)
+ */
+function playPcmBase64(
+  base64: string,
+  rate: number,
+  onEnd?: () => void
+): () => void {
+  let stopped = false;
+  let source: AudioBufferSourceNode | null = null;
+
+  const cleanup = () => {
+    if (stopped) return;
+    stopped = true;
+    try {
+      source?.stop();
+      source?.disconnect();
+    } catch { /* ignore */ }
+    onEnd?.();
+  };
+
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  // Convertir Int16 PCM en Float32 pour AudioBuffer
+  const int16 = new Int16Array(bytes.buffer);
+  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const ctx = new AudioCtx();
+  const audioBuffer = ctx.createBuffer(1, int16.length, 24000);
+  const channelData = audioBuffer.getChannelData(0);
+  for (let i = 0; i < int16.length; i++) {
+    channelData[i] = int16[i] / 32768;
+  }
+
+  source = ctx.createBufferSource();
+  source.buffer = audioBuffer;
+  source.playbackRate.value = Math.max(0.5, Math.min(2.0, rate));
+  source.connect(ctx.destination);
+  source.onended = cleanup;
+  source.start(0);
+
+  return cleanup;
+}
+
+/**
+ * Joue un MP3/WAV encodé via decodeAudioData (ElevenLabs)
+ */
+function playEncodedBase64(
   base64: string,
   rate: number,
   onEnd?: () => void
@@ -118,11 +175,7 @@ function playMp3Base64(
     source.onended = cleanup;
     source.start(0);
   }).catch(() => {
-    // MP3 decode failed → fallback browser
-    stopped = true;
-    const stop = speakWithBrowser(base64.slice(0, 100), { rate, onEnd });
-    // Override cleanup
-    return stop;
+    cleanup();
   });
 
   return cleanup;

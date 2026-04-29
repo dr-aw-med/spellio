@@ -86,10 +86,8 @@ async function tryGeminiTts(text: string): Promise<string | null> {
     const pcmBase64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     if (!pcmBase64) return null;
 
-    // Convertir PCM brut en WAV
-    const pcmBytes = Uint8Array.from(atob(pcmBase64), c => c.charCodeAt(0));
-    const wavBytes = addWavHeader(pcmBytes);
-    return toBase64(wavBytes.buffer);
+    // Envoyer le PCM brut (le client le décode)
+    return pcmBase64;
   } catch (err) {
     console.log('Gemini TTS error:', err);
     return null;
@@ -151,20 +149,20 @@ serve(async (req) => {
 
     const safeText = text.slice(0, 5000);
 
-    // 1. Essayer ElevenLabs (stable)
-    const elevenAudio = await tryElevenLabsTts(safeText);
-    if (elevenAudio) {
+    // 1. Essayer Gemini TTS
+    const geminiAudio = await tryGeminiTts(safeText);
+    if (geminiAudio) {
       return new Response(
-        JSON.stringify({ audio: elevenAudio, mimeType: 'audio/mpeg', provider: 'elevenlabs' }),
+        JSON.stringify({ audio: geminiAudio, mimeType: 'audio/pcm', provider: 'gemini' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // 2. Fallback Gemini TTS (expérimental)
-    const geminiAudio = await tryGeminiTts(safeText);
-    if (geminiAudio) {
+    // 2. Fallback ElevenLabs
+    const elevenAudio = await tryElevenLabsTts(safeText);
+    if (elevenAudio) {
       return new Response(
-        JSON.stringify({ audio: geminiAudio, mimeType: 'audio/wav', provider: 'gemini' }),
+        JSON.stringify({ audio: elevenAudio, mimeType: 'audio/mpeg', provider: 'elevenlabs' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
