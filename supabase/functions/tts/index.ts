@@ -69,9 +69,8 @@ async function tryGeminiTts(text: string): Promise<string | null> {
             responseModalities: ['AUDIO'],
             speechConfig: {
               voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: 'Orus' },
+                prebuiltVoiceConfig: { voiceName: 'Kore' },
               },
-              language: 'fr-FR',
             },
           },
         }),
