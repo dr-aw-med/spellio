@@ -44,7 +44,7 @@ export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps)
         setSentences(parsed);
         // Prefetch les premieres phrases pour la dictee
         parsed.slice(0, 2).forEach(s => {
-          prefetchAudio(`${s}. . . . Je répète : ${s}`);
+          prefetchAudio(addSpokenPunctuation(s));
         });
         // Générer l'illustration automatiquement
         generateStoryIllustration(result.story).then(img => {
@@ -69,7 +69,7 @@ export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps)
   useEffect(() => {
     if (mode === 'DICTATION' && currentSentenceIndex < sentences.length - 1) {
       const next = sentences[currentSentenceIndex + 1];
-      prefetchAudio(`${next}. . . . Je répète : ${next}`);
+      prefetchAudio(addSpokenPunctuation(next));
     }
   }, [currentSentenceIndex, mode, sentences]);
 
@@ -83,9 +83,7 @@ export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps)
 
   const playText = async (text: string, isDictation = false) => {
     handleStop();
-    const textToRead = isDictation
-      ? `${addSpokenPunctuation(text)} ... ... ... Je répète ... ${addSpokenPunctuation(text)}`
-      : text;
+    const textToRead = isDictation ? addSpokenPunctuation(text) : text;
     setIsLoading(true);
 
     const stop = await speak(textToRead, {

@@ -36,7 +36,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
 
   useEffect(() => {
     isMountedRef.current = true;
-    words.slice(0, 3).forEach(w => prefetchAudio(`${w}. . . Encore une fois : ${w}`));
+    words.slice(0, 3).forEach(w => prefetchAudio(w));
     return () => {
       isMountedRef.current = false;
       stopAudioRef.current();
@@ -49,7 +49,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
 
     if (currentIndex < words.length - 1) {
       const next = words[currentIndex + 1];
-      prefetchAudio(`${next}. . . Encore une fois : ${next}`);
+      prefetchAudio(next);
     }
 
     const timer = setTimeout(() => {
@@ -69,7 +69,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
 
   const playWord = async (text: string) => {
     handleStop();
-    const prompt = `${text} ... ... ... Encore une fois ... ${text}`;
+    const prompt = text;
     setIsLoading(true);
 
     const stop = await speak(prompt, {
