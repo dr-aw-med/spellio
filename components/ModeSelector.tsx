@@ -73,7 +73,7 @@ export const ModeSelector = ({ onSelect, userRole, onSignupPrompt, hasActiveChil
         </p>
         {isStoryLocked && (
           <span className="inline-block mt-3 text-xs font-bold bg-pink-100 text-pink-600 px-3 py-1.5 rounded-full">
-            Gratuit avec un compte
+            Connecte-toi pour débloquer
           </span>
         )}
         {showUpgrade && (

@@ -153,7 +153,7 @@ function App() {
   const handleSignupPrompt = () => {
     showModal(
       'Mode réservé !',
-      'L\'histoire magique est gratuite avec un compte Parent. Crée-en un depuis l\'accueil !',
+      'L\'histoire magique est disponible avec un compte. Connecte-toi avec ton code élève ou demande à tes parents !',
       'info'
     );
   };
