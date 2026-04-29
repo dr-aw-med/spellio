@@ -69,7 +69,7 @@ export const WordDictation = ({ words, onFinish, onBack }: WordDictationProps) =
 
   const playWord = async (text: string) => {
     handleStop();
-    const prompt = `${text}. . . Encore une fois : ${text}`;
+    const prompt = `${text} ... ... ... Encore une fois ... ${text}`;
     setIsLoading(true);
 
     const stop = await speak(prompt, {

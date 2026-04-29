@@ -84,7 +84,7 @@ export const StoryDictation = ({ words, onFinish, onBack }: StoryDictationProps)
   const playText = async (text: string, isDictation = false) => {
     handleStop();
     const textToRead = isDictation
-      ? `${addSpokenPunctuation(text)}. . . . Je répète : ${addSpokenPunctuation(text)}`
+      ? `${addSpokenPunctuation(text)} ... ... ... Je répète ... ${addSpokenPunctuation(text)}`
       : text;
     setIsLoading(true);
 
