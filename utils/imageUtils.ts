@@ -6,6 +6,18 @@
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(',')[1]);
+    };
+    reader.onerror = () => reject(new Error('Impossible de lire ce fichier.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 interface CompressedImage {
   base64: string;
   mimeType: string;
@@ -33,6 +45,14 @@ export const compressImage = async (
     throw new Error(
       `L'image est trop volumineuse (${sizeMB} Mo). La taille maximale est de 10 Mo.`
     );
+  }
+
+  // HEIC/HEIF : Chrome/Firefox ne décodent pas ce format.
+  // Envoyer le fichier brut en base64 — Gemini gère HEIC nativement.
+  const isHeic = ext === '.heic' || ext === '.heif' || file.type === 'image/heic' || file.type === 'image/heif';
+  if (isHeic) {
+    const base64 = await fileToBase64(file);
+    return { base64, mimeType: file.type || 'image/heic' };
   }
 
   // Charger l'image dans un élément HTMLImageElement
