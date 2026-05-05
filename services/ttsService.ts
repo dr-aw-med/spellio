@@ -9,6 +9,20 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 // Cache en mémoire : text -> { audio, mimeType }
 const audioCache = new Map<string, { audio: string; mimeType: string }>();
 
+// AudioContext partagé — évite le leak (limite navigateur ~6 contextes)
+let sharedCtx: AudioContext | null = null;
+function getAudioContext(): AudioContext {
+  if (!sharedCtx || sharedCtx.state === 'closed') {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    sharedCtx = new AudioCtx();
+  }
+  // Reprendre si suspendu (politique autoplay navigateur)
+  if (sharedCtx.state === 'suspended') {
+    sharedCtx.resume();
+  }
+  return sharedCtx;
+}
+
 async function fetchTts(text: string): Promise<{ audio: string; mimeType: string } | null> {
   if (!API_BASE) return null;
 
@@ -116,11 +130,10 @@ function playPcmBase64(
     bytes[i] = binary.charCodeAt(i);
   }
 
-  // Convertir Int16 PCM big-endian en Float32 pour AudioBuffer
+  // Convertir Int16 PCM little-endian en Float32 pour AudioBuffer
   const view = new DataView(bytes.buffer);
   const numSamples = Math.floor(bytes.length / 2);
-  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const ctx = new AudioCtx();
+  const ctx = getAudioContext();
   const audioBuffer = ctx.createBuffer(1, numSamples, 24000);
   const channelData = audioBuffer.getChannelData(0);
   for (let i = 0; i < numSamples; i++) {
@@ -164,10 +177,9 @@ function playEncodedBase64(
     bytes[i] = binary.charCodeAt(i);
   }
 
-  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const ctx = new AudioCtx();
+  const ctx = getAudioContext();
 
-  ctx.decodeAudioData(bytes.buffer).then(buffer => {
+  ctx.decodeAudioData(bytes.buffer.slice(0)).then(buffer => {
     if (stopped) return;
     source = ctx.createBufferSource();
     source.buffer = buffer;
