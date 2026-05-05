@@ -18,11 +18,19 @@ serve(async (req) => {
 
     const raw = await callGeminiWithImage(
       image, mimeType,
-      "Extrais les mots de cette image pour une dictee. Reponds UNIQUEMENT avec un tableau JSON de strings."
+      "Extrais les mots de cette image pour une dictee. Reponds avec un objet JSON {\"words\": [\"mot1\", \"mot2\", ...]}.",
+      { jsonMode: true }
     );
 
-    const match = raw.match(/\[[\s\S]*\]/);
-    const words = match ? JSON.parse(match[0]) : [];
+    let words: string[] = [];
+    try {
+      const parsed = JSON.parse(raw);
+      words = Array.isArray(parsed) ? parsed : (parsed.words || []);
+    } catch {
+      // Fallback : extraire le tableau du texte brut
+      const match = raw.match(/\[[\s\S]*?\]/);
+      words = match ? JSON.parse(match[0]) : [];
+    }
 
     return new Response(
       JSON.stringify({ words }),

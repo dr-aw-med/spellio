@@ -30,13 +30,20 @@ async function callWithRetry(url: string, body: object, maxRetries = 2): Promise
   throw new Error('Gemini: max retries reached');
 }
 
-export async function callGemini(prompt: string): Promise<string> {
+export async function callGemini(
+  prompt: string,
+  options?: { jsonMode?: boolean }
+): Promise<string> {
   for (const model of MODELS) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-      return await callWithRetry(url, {
+      const body: Record<string, unknown> = {
         contents: [{ parts: [{ text: prompt }] }],
-      });
+      };
+      if (options?.jsonMode) {
+        body.generationConfig = { responseMimeType: 'application/json' };
+      }
+      return await callWithRetry(url, body);
     } catch (err) {
       const msg = String(err);
       if (msg.includes('503') || msg.includes('429')) {
@@ -49,18 +56,27 @@ export async function callGemini(prompt: string): Promise<string> {
   throw new Error('Tous les modeles Gemini sont indisponibles');
 }
 
-export async function callGeminiWithImage(base64: string, mimeType: string, prompt: string): Promise<string> {
+export async function callGeminiWithImage(
+  base64: string,
+  mimeType: string,
+  prompt: string,
+  options?: { jsonMode?: boolean }
+): Promise<string> {
   for (const model of MODELS) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-      return await callWithRetry(url, {
+      const body: Record<string, unknown> = {
         contents: [{
           parts: [
             { inline_data: { mime_type: mimeType, data: base64 } },
             { text: prompt },
           ],
         }],
-      });
+      };
+      if (options?.jsonMode) {
+        body.generationConfig = { responseMimeType: 'application/json' };
+      }
+      return await callWithRetry(url, body);
     } catch (err) {
       const msg = String(err);
       if (msg.includes('503') || msg.includes('429')) {

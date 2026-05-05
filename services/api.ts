@@ -30,7 +30,11 @@ export const extractWordsFromImage = async (base64Image: string, mimeType: strin
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: base64Image, mimeType }),
   });
-  if (!res.ok) throw new Error('Erreur OCR');
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '');
+    console.error(`OCR ${res.status}:`, errBody);
+    throw new Error(`Erreur OCR (${res.status})`);
+  }
   const data = await res.json();
   return data.words;
 };

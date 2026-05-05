@@ -19,11 +19,17 @@ serve(async (req) => {
     const cleanWords = words.slice(0, 50).map((w: string) => String(w).slice(0, 100));
 
     const raw = await callGemini(
-      `Cree une petite histoire amusante pour un enfant avec ces mots: ${cleanWords.join(', ')}. 5-8 phrases courtes. Reponds UNIQUEMENT en JSON: {"title": "...", "story": "..."}`
+      `Cree une petite histoire amusante pour un enfant avec ces mots: ${cleanWords.join(', ')}. 5-8 phrases courtes. Reponds en JSON: {"title": "...", "story": "..."}`,
+      { jsonMode: true }
     );
 
-    const match = raw.match(/\{[\s\S]*\}/);
-    const parsed = match ? JSON.parse(match[0]) : { title: 'Histoire', story: raw };
+    let parsed: { title: string; story: string };
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      const match = raw.match(/\{[\s\S]*?\}/);
+      parsed = match ? JSON.parse(match[0]) : { title: 'Histoire', story: raw };
+    }
 
     return new Response(
       JSON.stringify(parsed),
